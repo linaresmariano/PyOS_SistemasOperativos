@@ -12,14 +12,13 @@ class PCB:
         self.state = "ready"
         self.pc = 0
         self.program = aProgram
-
-    # Return next instruction and increment PC register
+        
     def getInstruction(self):
-        retInst = self.program.getInstruction(self.pc)
+        return self.program.getInstruction(self.pc)
     
+    def increasePC(self):
         self.pc += 1
-        if self.pc == len(self.program.instructions):
-            self.kernel.haltEND()
-            return
-            
-        return retInst
+        
+    def isEnded(self):
+        # Returns 'true' if PC of currentPCB is higher than length of pcb instructions
+        return len(self.program.instructions) <= self.pc

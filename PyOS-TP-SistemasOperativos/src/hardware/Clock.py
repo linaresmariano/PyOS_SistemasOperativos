@@ -4,14 +4,14 @@ Created on 21/09/2012
 @author: MarianoLinares
 '''
 
-#import time
+import time
 import threading
 
 
 class Clock:
     
     '''
-    @args: lapse is the time of a executing burst
+    @args: interval is the time of a executing burst
     '''
     def __init__(self, interval, listeners):
         self.tick = 0
@@ -19,19 +19,22 @@ class Clock:
         self.interval = interval
         
         # Initial tick dispatch
-        self.dispatchTick()
+        self.t = threading.Timer(self.interval, self.dispatchTick)
+        self.t.start()
         
     def dispatchTick(self):
-        
-        self.tick += 1
-
-        # Actions of Tick
-        print("Tick: " + str(self.tick))
-        
-        # Dispatch ticks for all listeners
-        for li in self.listeners:
-            li.execute()
-
         # Re-Dispatch infinity ticks
-        self.t = threading.Timer(self.interval, self.dispatchTick).start()
+        while True:
+            
+            self.tick += 1
+    
+            # Actions of Tick
+            print("Tick: " + str(self.tick))
+            
+            # Dispatch ticks for all listeners
+            for li in self.listeners:
+                li.execute()
+
+            # Wait for next tick
+            time.sleep(self.interval)
 

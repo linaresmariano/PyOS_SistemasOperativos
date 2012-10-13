@@ -8,8 +8,7 @@ from hardware.CPU import CPU
 from hardware.Clock import Clock
 from software.Scheduler import FIFO
 from software.PCB import PCB
-from software.Program import Program
-from software.Program import Instruction
+from software.Program import Program, Instruction
 
 class Kernel:
 
@@ -21,57 +20,61 @@ class Kernel:
         self.modeKernel = False
         # Hardware
         self.cpu = CPU(self)
-        #self.clock = Clock(1, [])
-        # Software 
-        self.scheduler = FIFO()
+        self.clock = Clock(1, [self.cpu])  # Start clock
+        # Software
+        self.scheduler = FIFO(self)
+        
         print(self.name + " " + self.version + " started.")
         
-        #Start clock
-        self.clock = Clock(1, [self.cpu])
-        
     def executeProgram(self, aProgram):
+        
         # Build new PCB
         newPCB = PCB(self, aProgram)
+        self.scheduler.addPCB(newPCB)
         self.nextPCBID += 1
-        
-        # if cpu is idle
+
+        # if cpu is idle, switch now
         if self.cpu.idle:
             # Execute new PCB
-            self.cpu.setCurrent(newPCB)
-            self.cpu.idle = False
-        else:
-            # Add in the scheduler a new PCB ready to execute
-            self.scheduler.addPCB(newPCB)
+            self.scheduler.contextSwitch()
             
     # TODO: IRQ (interrupt manager)
     def haltEND(self):
-        self.modeKernel = True
-        self.cpu.idle = True
+        print("haltEND")
+        self.turnToKernelMode()
+        self.scheduler.contextSwitch()
+        self.turnToUserMode()
         
-        print("Running program ends")
-        #self.dispatcher(self.scheduler.nextPCB())
+    def turnToKernelMode(self):
+        self.modeKernel = True
 
-
+    def turnToUserMode(self):
+        self.modeKernel = False
 
 #==================================
 #       ''' Main execute '''
 #==================================
 
-i = Instruction("cpu")
+instC = Instruction(True)
+instI = Instruction(False)
 
 # Sudoku
 p1 = Program("Sudoku")
-p1.setInstructions([i, i, i, i, i, i, i])
+p1.setInstructions([instC, instC, instC, instC, instC, instC, instC])
 print(p1.name + ": " + str(len(p1.instructions)) + " instructions.")
 
 # TicTacToe
 p2 = Program("TicTacToe")
-p2.setInstructions([i, i, i, i, i, i, i])
+p2.setInstructions([instC, instC, instC, instC, instC, instC, instC])
 print(p2.name + ": " + str(len(p2.instructions)) + " instructions.")
+
+# Mines
+p3 = Program("Mines")
+p3.setInstructions([instC, instC, instC, instC, instC, instC, instC])
+print(p3.name + ": " + str(len(p3.instructions)) + " instructions.")
 
 # Kernel
 k = Kernel()
 k.executeProgram(p1)
 k.executeProgram(p2)
-
-#k.cpu.currentPCB = PCB(k, )
+k.executeProgram(p3)

@@ -17,41 +17,26 @@ class CPU:
         
         # If is in UserMode and self is not idle, execute next instr        
         if (not self.kernel.modeKernel) and (not self.idle):
+
+            inst = self.currentPCB.getInstruction()
             
-            if (not self.currentPCB.isEnded()):
-                inst = self.currentPCB.getInstruction()
+            # If is to CPU, execute
+            if inst.isCPUInstruction():
+                self.currentPCB.increasePC()
                 
-                if inst.isCPUInstruction():
-                    self.currentPCB.increasePC()
-                    
-                    # TODO: Log to action
-                    print("Intruction " + str(self.currentPCB.pc)
-                      + " of " + str(len(self.currentPCB.program.instructions))
-                      + " of " + str(self.currentPCB.program.name)
-                      + ". Process ID: " + str(self.currentPCB.id) + " executed")
-                    
-                '''else:
-                    self.kernel.iOInstructionInterruption()'''
-            else:
-                self.kernel.haltEND()
-            
-
-
-        '''
-        
-        if not self.kernel.modeKernel and not self.idle:
-            
-            print(str(self.currentPCB.pc))
-            
-            # TODO: see if it's to CPU
-            self.currentPCB.executeInstruction()
-            
-            
-            
-            print("Intruction " + str(self.currentPCB.pc)
+                # TODO: Log to action
+                print("Intruction " + str(self.currentPCB.pc)
                   + " of " + str(len(self.currentPCB.program.instructions))
                   + " of " + str(self.currentPCB.program.name)
-                  + ". Process ID: " + str(self.currentPCB.id) + " executed")'''
+                  + ". Process ID: " + str(self.currentPCB.id) + " executed")
+                
+                if self.currentPCB.isEnded():
+                    self.kernel.haltEND()
+                    
+            # If is to IO, dispatch interruption
+            # TODO: IO instructions, hardware and interruptions 
+        '''else:
+            self.kernel.iOInstructionInterruption()'''
     
     def reset(self):
         self.setCurrentPCB(None)

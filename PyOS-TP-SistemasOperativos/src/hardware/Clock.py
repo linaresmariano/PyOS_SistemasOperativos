@@ -33,8 +33,9 @@ class Clock:
             
             # Dispatch ticks for all listeners
             for li in self.listeners:
-                li.execute()
+                li.tick()
 
             # Wait for next tick
             time.sleep(self.interval)
+        
 

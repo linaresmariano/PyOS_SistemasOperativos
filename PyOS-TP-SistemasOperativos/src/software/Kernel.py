@@ -6,9 +6,10 @@ Created on 21/09/2012
 
 from hardware.CPU import CPU
 from hardware.Clock import Clock
-from software.Scheduler import FIFO
+from software.Scheduler import FIFO, RR
 from software.PCB import PCB
 from software.Program import Program, Instruction
+from software.Timer import Timer
 
 class Kernel:
 
@@ -18,11 +19,17 @@ class Kernel:
         self.version = "0.1"
         self.nextPCBID = 1
         self.modeKernel = False
+        
         # Hardware
         self.cpu = CPU(self)
-        self.clock = Clock(1, [self.cpu])  # Start clock
+        
         # Software
         self.scheduler = FIFO(self)
+        #self.scheduler = RR(self, 2)
+        
+        # Timer/Clock
+        self.timer = Timer([self.cpu])
+        self.clock = Clock(1, [self.timer])  # Start clock
         
         print(self.name + " " + self.version + " started.")
         
@@ -33,7 +40,7 @@ class Kernel:
         self.scheduler.addPCB(newPCB)
         self.nextPCBID += 1
 
-        # if cpu is idle, switch now
+        # If cpu is idle, switch now
         if self.cpu.idle:
             # Execute new PCB
             self.scheduler.contextSwitch()
@@ -41,6 +48,14 @@ class Kernel:
     # TODO: IRQ (interrupt manager)
     def haltEND(self):
         print("haltEND")
+        self.turnToKernelMode()
+        # Delete finished pcb
+        self.cpu.reset()
+        self.scheduler.contextSwitch()
+        self.turnToUserMode()
+        
+    def TIMEoutHALT(self):
+        print("time out")
         self.turnToKernelMode()
         self.scheduler.contextSwitch()
         self.turnToUserMode()
@@ -50,6 +65,9 @@ class Kernel:
 
     def turnToUserMode(self):
         self.modeKernel = False
+        
+    def shutDown(self):
+        self.clock.stop()
 
 #==================================
 #       ''' Main execute '''
@@ -77,4 +95,4 @@ print(p3.name + ": " + str(len(p3.instructions)) + " instructions.")
 k = Kernel()
 k.executeProgram(p1)
 k.executeProgram(p2)
-k.executeProgram(p3)
+#k.executeProgram(p3)

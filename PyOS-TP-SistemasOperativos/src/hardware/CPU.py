@@ -15,6 +15,8 @@ class CPU:
     def tick(self):
         print("CPU idle: " + str(self.idle))
         
+        if self.kernel.thisIsTheEnd(): self.kernel.shutDown()
+        
         # If is in UserMode and self is not idle, execute next instr        
         if (not self.kernel.modeKernel) and (not self.idle):
 

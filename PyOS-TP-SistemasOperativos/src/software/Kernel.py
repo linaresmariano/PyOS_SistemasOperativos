@@ -68,9 +68,15 @@ class Kernel:
 
     def turnToUserMode(self):
         self.modeKernel = False
-        
+    
+    # Returns true if all queues are empty
+    def thisIsTheEnd(self):
+        return self.cpu.idle and (not self.scheduler.readyQueue)
+    
+    # Shut down the OS
     def shutDown(self):
         self.clock.stop()
+        print("System shut down")
 
 #==================================
 #       ''' Main execute '''
@@ -81,7 +87,7 @@ instI = Instruction(False)
 
 # Sudoku
 p1 = Program("Sudoku")
-p1.setInstructions([instC, instC, instC, instC, instC, instC, instC])
+p1.setInstructions([instC, instC, instC, instC])
 print(p1.name + ": " + str(len(p1.instructions)) + " instructions.")
 
 # TicTacToe
@@ -97,5 +103,5 @@ print(p3.name + ": " + str(len(p3.instructions)) + " instructions.")
 # Kernel
 k = Kernel()
 k.executeProgram(p1)
-k.executeProgram(p2)
-k.executeProgram(p3)
+#k.executeProgram(p2)
+#k.executeProgram(p3)

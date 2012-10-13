@@ -17,6 +17,7 @@ class Clock:
         self.tick = 0
         self.listeners = listeners
         self.interval = interval
+        self.run = True
         
         # Initial tick dispatch
         self.t = threading.Timer(self.interval, self.dispatchTick)
@@ -24,7 +25,7 @@ class Clock:
         
     def dispatchTick(self):
         # Re-Dispatch infinity ticks
-        while True:
+        while self.run:
             
             self.tick += 1
     
@@ -37,5 +38,8 @@ class Clock:
 
             # Wait for next tick
             time.sleep(self.interval)
+        
+    def stop(self):
+        self.run = False
         
 

@@ -9,7 +9,7 @@ from hardware.Clock import Clock
 from software.Scheduler import FIFO, RR
 from software.PCB import PCB
 from software.Program import Program, Instruction
-from software.Timer import Timer
+#from software.Timer import Timer
 
 class Kernel:
 
@@ -24,19 +24,19 @@ class Kernel:
         self.cpu = CPU(self)
         
         # Software
-        self.scheduler = FIFO(self)
-        #self.scheduler = RR(self, 2)
+        #self.scheduler = FIFO(self)
+        self.scheduler = RR(self, 3)
         
         # Timer/Clock
-        self.timer = Timer([self.cpu])
-        self.clock = Clock(1, [self.timer])  # Start clock
+        #self.timer = Timer([])
+        self.clock = Clock(1, [self.cpu, self.scheduler])  # Start clock
         
         print(self.name + " " + self.version + " started.")
         
     def executeProgram(self, aProgram):
         
         # Build new PCB
-        newPCB = PCB(self, aProgram)
+        newPCB = PCB(self.nextPCBID, aProgram)
         self.scheduler.addPCB(newPCB)
         self.nextPCBID += 1
 
@@ -51,11 +51,14 @@ class Kernel:
         self.turnToKernelMode()
         # Delete finished pcb
         self.cpu.reset()
+        self.scheduler.restartQuantum()
         self.scheduler.contextSwitch()
         self.turnToUserMode()
         
     def TIMEoutHALT(self):
         print("time out")
+        # Restart quantum timer
+        self.scheduler.restartQuantum()
         self.turnToKernelMode()
         self.scheduler.contextSwitch()
         self.turnToUserMode()
@@ -95,4 +98,4 @@ print(p3.name + ": " + str(len(p3.instructions)) + " instructions.")
 k = Kernel()
 k.executeProgram(p1)
 k.executeProgram(p2)
-#k.executeProgram(p3)
+k.executeProgram(p3)

@@ -6,24 +6,28 @@ Created on 21/09/2012
 
 class Scheduler:
 
-    #Dispacher operations
+    #Dispatcher operations
     def contextSwitch(self):
-        #if there are any process on ready to execute, then take out the 
-        #  process on the CPU and puts the selected process, else only
-        #  take out the process from the CPU
         
+        # Save the old PCB
         if not self.cpu.idle:
-            # Save the old pcb
             oldPCB = self.cpu.getCurrentPCB()
             self.addPCB(oldPCB)
 
+        # Reset cpu
         self.cpu.reset()
         
-        print(len(self.readyQueue))
-        
+        # Select and switch the new PCB 
         if self.isThereAReadyProcess():
             newPCB = self.getNextPCB()
             self.cpu.contextSwitch(newPCB)
+    
+    # Used in RR strategy
+    def tick(self):
+        pass
+    
+    def restartQuantum(self):
+        pass
 
 
 class FIFO(Scheduler):
@@ -44,26 +48,21 @@ class FIFO(Scheduler):
     def isThereAReadyProcess(self):
         return bool(self.readyQueue)
 
-class RR(Scheduler):
+class RR(FIFO):
     def __init__(self, aKernel, quantum):
+        self.kernel = aKernel
         self.cpu = aKernel.cpu
         self.readyQueue = []
         self.quantum = quantum
-    
-    def addPCB(self, aPCB):
-        self.readyQueue.append(aPCB)
+        self.partial = 0
 
-    # TODO: dequeue readyPCB returned
-    # prec: readyQueue has at least one element 
-    def getNextPCB(self):
-        if self.readyQueue:
-            ret = self.readyQueue[0]
-            del self.readyQueue[0]
-            return ret
-        
-    def isThereAReadyProcess(self):
-        return bool(self.readyQueue)
-    
+    def tick(self):
+        self.partial += 1
+        if(self.quantum == self.partial):
+            self.kernel.TIMEoutHALT()
+            
+    def restartQuantum(self):
+        self.partial = 0
     
 '''
 class Prioridad(Scheduler):

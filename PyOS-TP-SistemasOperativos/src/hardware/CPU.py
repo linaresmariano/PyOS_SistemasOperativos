@@ -12,7 +12,7 @@ class CPU:
         self.idle = True
     
     # Execute next instruction in currentPCB
-    def execute(self):
+    def tick(self):
         print("CPU idle: " + str(self.idle))
         
         # If is in UserMode and self is not idle, execute next instr        

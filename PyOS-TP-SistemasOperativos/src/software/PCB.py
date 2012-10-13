@@ -6,9 +6,8 @@ Created on 21/09/2012
 
 class PCB:
 
-    def __init__(self, kernel, aProgram):
-        self.id = kernel.nextPCBID
-        self.kernel = kernel
+    def __init__(self, PCBID, aProgram):
+        self.id = PCBID
         self.state = "ready"
         self.pc = 0
         self.program = aProgram

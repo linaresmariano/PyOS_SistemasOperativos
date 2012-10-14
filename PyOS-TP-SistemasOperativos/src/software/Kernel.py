@@ -30,7 +30,7 @@ class Kernel:
         
         # Timer/Clock
         #self.timer = Timer([])
-        self.clock = Clock(1, [self.cpu, self.scheduler])  # Start clock
+        self.clock = Clock(0.2, [self.cpu, self.scheduler])  # Start clock
         
         print(self.name + " " + self.version + " started.")
         
@@ -79,6 +79,7 @@ class Kernel:
     def shutDown(self):
         self.clock.stop()
         print("System shut down")
+
 
 #==================================
 #       ''' Main execute '''

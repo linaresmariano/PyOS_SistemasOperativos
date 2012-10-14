@@ -6,7 +6,11 @@ Created on 21/09/2012
 
 from software.PCB import PriorityPCB
 
-class Scheduler:
+class Scheduler(object):
+    
+    def __init__(self, aKernel):
+        self.cpu = aKernel.cpu
+        self.readyQueue = []
 
     #Dispatcher operations
     def contextSwitch(self):
@@ -39,10 +43,13 @@ class Scheduler:
         pass
 
 
+
+#==============================
+#     Strategy FCFS = FIFO
+#==============================
 class FIFO(Scheduler):
     def __init__(self, aKernel):
-        self.cpu = aKernel.cpu
-        self.readyQueue = []
+        super(FIFO, self).__init__(aKernel)
 
     # Prec: readyQueue has at least one element 
     def getNextPCB(self):
@@ -51,6 +58,11 @@ class FIFO(Scheduler):
             del self.readyQueue[0]
             return ret
 
+
+
+#=================================
+#      Strategy Round Robin
+#=================================
 class RR(FIFO):
     def __init__(self, aKernel, quantum):
         self.kernel = aKernel
@@ -66,8 +78,12 @@ class RR(FIFO):
             
     def restartQuantum(self):
         self.partial = 0
-    
 
+
+
+#===================================
+#     Strategy "With Priority"
+#===================================
 class PRIO(Scheduler):
     def __init__(self, aKernel):
         self.cpu = aKernel.cpu

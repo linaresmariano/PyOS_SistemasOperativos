@@ -27,4 +27,7 @@ class Instruction:
     
     def isCPUInstruction(self):
         return self.toCPU
+    
+    def isIOInstruction(self):
+        return not self.toCPU
         

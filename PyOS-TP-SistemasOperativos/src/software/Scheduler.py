@@ -10,6 +10,7 @@ class Scheduler(object):
     
     def __init__(self, aKernel):
         self.cpu = aKernel.cpu
+        self.io = aKernel.io
         self.readyQueue = []
 
     #Dispatcher operations
@@ -41,6 +42,9 @@ class Scheduler(object):
     
     def restartQuantum(self):
         pass
+    
+    def sendToIO(self, aPCB):
+        self.io.addPCB(aPCB)
 
 
 
@@ -67,6 +71,7 @@ class RR(FIFO):
     def __init__(self, aKernel, quantum):
         self.kernel = aKernel
         self.cpu = aKernel.cpu
+        self.io = aKernel.io
         self.readyQueue = []
         self.quantum = quantum
         self.partial = 0
@@ -87,6 +92,7 @@ class RR(FIFO):
 class PRIO(Scheduler):
     def __init__(self, aKernel):
         self.cpu = aKernel.cpu
+        self.io = aKernel.io
         self.readyQueue = []
 
     def addPCB(self, aPCB):

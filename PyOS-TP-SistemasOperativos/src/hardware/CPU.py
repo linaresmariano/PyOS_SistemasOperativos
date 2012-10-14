@@ -26,19 +26,18 @@ class CPU:
             if inst.isCPUInstruction():
                 self.currentPCB.increasePC()
                 
-                # TODO: Log to action
+                # TODO: Log of actions
                 print("Intruction " + str(self.currentPCB.pc)
                   + " of " + str(len(self.currentPCB.program.instructions))
                   + " of " + str(self.currentPCB.program.name)
-                  + ". Process ID: " + str(self.currentPCB.id) + " executed")
+                  + ". Process ID: " + str(self.currentPCB.id) + " executed in CPU")
                 
                 if self.currentPCB.isEnded():
                     self.kernel.haltEND()
                     
-            # If is to IO, dispatch interruption
-            # TODO: IO instructions, hardware and interruptions 
-        '''else:
-            self.kernel.iOInstructionInterruption()'''
+            # If is to IO, dispatch interruption 
+            else:
+                self.kernel.CPUioHALT()
     
     def reset(self):
         self.setCurrentPCB(None)

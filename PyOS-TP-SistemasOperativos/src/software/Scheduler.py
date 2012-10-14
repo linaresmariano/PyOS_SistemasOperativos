@@ -4,6 +4,8 @@ Created on 21/09/2012
 @author: MarianoLinares
 '''
 
+from software.PCB import PriorityPCB
+
 class Scheduler:
 
     #Dispatcher operations
@@ -21,6 +23,13 @@ class Scheduler:
         if self.isThereAReadyProcess():
             newPCB = self.getNextPCB()
             self.cpu.contextSwitch(newPCB)
+
+    # Add a PCB in the readyQueue       
+    def addPCB(self, aPCB):
+        self.readyQueue.append(aPCB)
+        
+    def isThereAReadyProcess(self):
+        return bool(self.readyQueue)
     
     # Used in RR strategy
     def tick(self):
@@ -34,9 +43,6 @@ class FIFO(Scheduler):
     def __init__(self, aKernel):
         self.cpu = aKernel.cpu
         self.readyQueue = []
-    
-    def addPCB(self, aPCB):
-        self.readyQueue.append(aPCB)
 
     # Prec: readyQueue has at least one element 
     def getNextPCB(self):
@@ -44,9 +50,6 @@ class FIFO(Scheduler):
             ret = self.readyQueue[0]
             del self.readyQueue[0]
             return ret
-        
-    def isThereAReadyProcess(self):
-        return bool(self.readyQueue)
 
 class RR(FIFO):
     def __init__(self, aKernel, quantum):
@@ -64,17 +67,24 @@ class RR(FIFO):
     def restartQuantum(self):
         self.partial = 0
     
-'''
-class Prioridad(Scheduler):
-    def __init__(self):
-        Scheduler.__init__(self)
+
+class PRIO(Scheduler):
+    def __init__(self, aKernel):
+        self.cpu = aKernel.cpu
+        self.readyQueue = []
 
     def addPCB(self, aPCB):
-        self.readyQueue(PCBWPriority(aPCB))
-  
-    def nextPCB(self):
-        maxPriority = self.readyQueue[0]
-        for p in self.readyQueue:
-            if p.priority > maxPriority.priority:
-                maxPriority = p
-        return maxPriority'''
+        self.readyQueue.append(PriorityPCB(aPCB))
+
+    # Returns the highest priority process. Partial operation, must be a ready process
+    def getNextPCB(self):
+        retPCB = self.readyQueue[0]
+        for i in self.readyQueue:
+            if i.isLower(retPCB):
+                retPCB = i
+        
+        self.readyQueue.remove(retPCB)
+        
+        return retPCB.pcb
+        
+        

@@ -21,3 +21,21 @@ class PCB:
     def isEnded(self):
         # Returns 'true' if PC of currentPCB is higher than length of pcb instructions
         return len(self.program.instructions) <= self.pc
+    
+    
+
+class PriorityPCB:
+    def __init__(self, aPCB):
+        self.pcb = aPCB
+        # While less instructions, more priority
+        self.priority = len(aPCB.program.instructions)
+    
+    def isLower(self, aPCBWP):
+        return self.priority < aPCBWP.priority
+        
+    def toGrowOld(self):
+        self.priority -= 10
+
+
+
+

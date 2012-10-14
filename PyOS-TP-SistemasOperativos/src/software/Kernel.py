@@ -6,7 +6,7 @@ Created on 21/09/2012
 
 from hardware.CPU import CPU
 from hardware.Clock import Clock
-from software.Scheduler import FIFO, RR
+from software.Scheduler import FIFO, RR, PRIO
 from software.PCB import PCB
 from software.Program import Program, Instruction
 #from software.Timer import Timer
@@ -25,7 +25,8 @@ class Kernel:
         
         # Software
         #self.scheduler = FIFO(self)
-        self.scheduler = RR(self, 3)
+        #self.scheduler = RR(self, 3)
+        self.scheduler = PRIO(self)
         
         # Timer/Clock
         #self.timer = Timer([])
@@ -51,6 +52,7 @@ class Kernel:
         self.turnToKernelMode()
         # Delete finished pcb
         self.cpu.reset()
+        # TODO: see if restartQuantum occurs
         self.scheduler.restartQuantum()
         self.scheduler.contextSwitch()
         self.turnToUserMode()
@@ -92,16 +94,16 @@ print(p1.name + ": " + str(len(p1.instructions)) + " instructions.")
 
 # TicTacToe
 p2 = Program("TicTacToe")
-p2.setInstructions([instC, instC, instC, instC, instC, instC, instC])
+p2.setInstructions([instC, instC, instC, instC, instC])
 print(p2.name + ": " + str(len(p2.instructions)) + " instructions.")
 
 # Mines
 p3 = Program("Mines")
-p3.setInstructions([instC, instC, instC, instC, instC, instC, instC])
+p3.setInstructions([instC, instC])
 print(p3.name + ": " + str(len(p3.instructions)) + " instructions.")
 
 # Kernel
 k = Kernel()
 k.executeProgram(p1)
-#k.executeProgram(p2)
-#k.executeProgram(p3)
+k.executeProgram(p2)
+k.executeProgram(p3)

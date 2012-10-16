@@ -16,8 +16,8 @@ class Kernel:
 
     def __init__(self):
         # Internal state
-        self.name = "Infra"
-        self.version = "v0.1"
+        self.name = "Infra-Lalinhox"
+        self.version = "v0.2"
         self.nextPCBID = 1
         self.modeKernel = False
         
@@ -26,17 +26,18 @@ class Kernel:
         self.io = IO(self)
         
         # Software
-        self.scheduler = FIFO(self)
-        #self.scheduler = RR(self, 3)
+        #self.scheduler = FIFO(self)
+        self.scheduler = RR(self, 3)
         #self.scheduler = PRIO(self)
         
         # Timer/Clock
         #self.timer = Timer([])
-        self.clock = Clock(0.2, [self.cpu, self.io, self.scheduler])  # Start clock
+        self.clock1 = Clock(0.2, [self.cpu, self.scheduler])  # Start clock
+        self.clock2 = Clock(1, [self.io])  # Start clock
         
-        print("====================================")
+        print("===============================================")
         print("       Welcome to " + self.name + " " + self.version)
-        print("====================================")
+        print("===============================================")
         
     def executeProgram(self, aProgram):
         
@@ -134,7 +135,8 @@ class Kernel:
     
     # Shut down the OS
     def shutDown(self):
-        self.clock.stop()
+        self.clock1.stop()
+        self.clock2.stop()
         print("System shut down")
 
 
@@ -147,17 +149,17 @@ ii = Instruction(False)
 
 # Sudoku
 p1 = Program("Sudoku")
-p1.setInstructions([ii,ic,ii,ic,ii,ic,ii])
+p1.setInstructions([ic,ic,ic,ii,ii,ic,ic])
 print(p1.name + ": " + str(len(p1.instructions)) + " instructions.")
 
 # TicTacToe
 p2 = Program("TicTacToe")
-p2.setInstructions([ii,ii,ii,ic,ii,ic,ii])
+p2.setInstructions([ic,ic,ic,ic,ic,ic,ic])
 print(p2.name + ": " + str(len(p2.instructions)) + " instructions.")
 
 # Mines
 p3 = Program("Mines")
-p3.setInstructions([ic,ii,ii,ic,ii,ic,ii])
+p3.setInstructions([ic,ic,ic,ic,ic,ic,ic])
 print(p3.name + ": " + str(len(p3.instructions)) + " instructions.")
 
 # Kernel

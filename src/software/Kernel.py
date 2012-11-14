@@ -9,7 +9,6 @@ from hardware.IO import IO
 from hardware.Clock import Clock
 from software.Scheduler import FIFO, RR, PRIO
 from software.PCB import PCB
-from software.Program import Program, Instruction
 #from software.Timer import Timer
 
 class Kernel:
@@ -138,32 +137,6 @@ class Kernel:
         self.clock1.stop()
         self.clock2.stop()
         print("System shut down")
+        
+        
 
-
-#==================================
-#       ''' Main execute '''
-#==================================
-
-ic = Instruction(True)
-ii = Instruction(False)
-
-# Sudoku
-p1 = Program("Sudoku")
-p1.setInstructions([ic,ic,ic,ii,ii,ic,ic])
-print(p1.name + ": " + str(len(p1.instructions)) + " instructions.")
-
-# TicTacToe
-p2 = Program("TicTacToe")
-p2.setInstructions([ic,ic,ic,ic,ic,ic,ic])
-print(p2.name + ": " + str(len(p2.instructions)) + " instructions.")
-
-# Mines
-p3 = Program("Mines")
-p3.setInstructions([ic,ic,ic,ic,ic,ic,ic])
-print(p3.name + ": " + str(len(p3.instructions)) + " instructions.")
-
-# Kernel
-k = Kernel()
-k.executeProgram(p1)
-k.executeProgram(p2)
-k.executeProgram(p3)

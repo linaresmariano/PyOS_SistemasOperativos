@@ -22,7 +22,7 @@ class Kernel:
         
         # Hardware
         self.cpu = CPU(self)
-        self.io = IO(self)
+        self.io = IO(self, 1)
         
         # Software
         #self.scheduler = FIFO(self)
@@ -31,8 +31,7 @@ class Kernel:
         
         # Timer/Clock
         #self.timer = Timer([])
-        self.clock1 = Clock(0.2, [self.cpu, self.scheduler])  # Start clock
-        self.clock2 = Clock(1, [self.io])  # Start clock
+        self.clock = Clock(0.2, [self.cpu, self.scheduler])  # Start clock
         
         print("===============================================")
         print("       Welcome to " + self.name + " " + self.version)
@@ -134,8 +133,8 @@ class Kernel:
     
     # Shut down the OS
     def shutDown(self):
-        self.clock1.stop()
-        self.clock2.stop()
+        self.clock.stop()
+        self.io.stop()
         print("System shut down")
         
     def isModeKernel(self):

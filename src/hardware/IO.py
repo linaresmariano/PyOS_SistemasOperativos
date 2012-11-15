@@ -4,8 +4,11 @@ Created on 06/10/2012
 @author: MarianoLinares
 '''
 
+from hardware.Clock import Clock
+
 class IO:
-    def __init__(self, aKernel):
+    def __init__(self, aKernel, time):
+        self.clock = Clock(time, [self])  # Start clock
         self.kernel = aKernel
         self.readyQueue = []
         self.currentPCB = None
@@ -49,6 +52,9 @@ class IO:
         
     def isIdle(self):
         return not (self.currentPCB or self.readyQueue)
+    
+    def stop(self):
+        self.clock.stop()
 
             
             

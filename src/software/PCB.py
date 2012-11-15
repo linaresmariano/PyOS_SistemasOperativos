@@ -22,7 +22,8 @@ class PCB:
         # Returns 'true' if PC of currentPCB is higher than length of pcb instructions
         return len(self.program.instructions) <= self.pc
     
-    
+    def getId(self):
+        return self.id
 
 class PriorityPCB:
     def __init__(self, aPCB):

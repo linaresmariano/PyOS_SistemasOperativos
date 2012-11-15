@@ -17,7 +17,7 @@ class Scheduler(object):
     def contextSwitch(self):
         
         # Save the old PCB
-        if not self.cpu.idle:
+        if not self.cpu.isIdle():
             oldPCB = self.cpu.getCurrentPCB()
             self.addPCB(oldPCB)
 

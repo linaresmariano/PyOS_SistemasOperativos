@@ -20,26 +20,22 @@ class IO:
             del self.readyQueue[0]
         
         # If is in UserMode and self is not idle, execute next instr   
-        if (not self.kernel.modeKernel) and self.currentPCB:
-            
-            inst = self.currentPCB.getInstruction()
+        if ((not self.kernel.isModeKernel()) and bool(self.currentPCB)):
 
-            # If is to CPU, execute
-            if inst.isIOInstruction():
-                # Increments PC (execute intruction)
-                self.currentPCB.increasePC()
+            # Increments PC (execute intruction)
+            self.currentPCB.increasePC()
 
                 # TODO: Log of actions
-                print("Intruction " + str(self.currentPCB.pc)
+            '''print("Intruction " + str(self.currentPCB.pc)
                   + " of " + str(len(self.currentPCB.program.instructions))
                   + " of " + str(self.currentPCB.program.name)
-                  + ". Process ID: " + str(self.currentPCB.id) + " executed in IO")
-
-                if self.currentPCB.isEnded():
-                    self.kernel.IOfinHALT()
-                
-            # If is to IO, dispatch interruption 
+                  + ". Process ID: " + str(self.currentPCB.getId()) + " executed in IO")'''
+            
+            # If program ends of execute, notify to kernel
+            if self.currentPCB.isEnded():
+                self.kernel.IOfinHALT()
             else:
+                # If is to CPU, dispatch interruption 
                 self.kernel.IOcpuHALT()
                 
                 

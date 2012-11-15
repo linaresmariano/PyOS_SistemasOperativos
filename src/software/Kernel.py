@@ -46,7 +46,7 @@ class Kernel:
         self.nextPCBID += 1
 
         # If cpu is idle, switch now
-        if self.cpu.idle:
+        if self.cpu.isIdle():
             # Execute new PCB
             self.scheduler.contextSwitch()
             
@@ -130,13 +130,16 @@ class Kernel:
     
     # Returns true if all queues are empty
     def thisIsTheEnd(self):
-        return self.cpu.idle and self.io.isIdle() and (not self.scheduler.readyQueue)
+        return self.cpu.isIdle() and self.io.isIdle() and (not self.scheduler.readyQueue)
     
     # Shut down the OS
     def shutDown(self):
         self.clock1.stop()
         self.clock2.stop()
         print("System shut down")
+        
+    def isModeKernel(self):
+        return self.modeKernel
         
         
 

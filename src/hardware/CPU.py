@@ -13,12 +13,12 @@ class CPU:
     
     # Execute next instruction in currentPCB
     def tick(self):
-        print("CPU idle: " + str(self.idle))
+        print("CPU idle: " + str(self.isIdle()))
         
         if self.kernel.thisIsTheEnd(): self.kernel.shutDown()
         
         # If is in UserMode and self is not idle, execute next instr        
-        if (not self.kernel.modeKernel) and (not self.idle):
+        if (not self.kernel.isModeKernel()) and (not self.isIdle()):
 
             inst = self.currentPCB.getInstruction()
             
@@ -30,7 +30,7 @@ class CPU:
                 print("Intruction " + str(self.currentPCB.pc)
                   + " of " + str(len(self.currentPCB.program.instructions))
                   + " of " + str(self.currentPCB.program.name)
-                  + ". Process ID: " + str(self.currentPCB.id) + " executed in CPU")
+                  + ". Process ID: " + str(self.currentPCB.getId()) + " executed in CPU")
                 
                 if self.currentPCB.isEnded():
                     self.kernel.haltEND()
@@ -52,9 +52,12 @@ class CPU:
         
     def getCurrentPCB(self):
         return self.currentPCB
+    
+    def isIdle(self):
+        return bool(self.idle)
         
     def setIdle(self, idle):
-        self.idle = idle
+        self.idle = bool(idle)
         
         
         

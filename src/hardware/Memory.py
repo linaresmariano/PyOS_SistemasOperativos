@@ -11,19 +11,17 @@ class Memory():
             1 - data -> data (instruction)
     '''
     def __init__(self, size):
-        self.clusters = []
-        cluster = [False, None]
-        for _ in range(0, size):
-            self.clusters.append(cluster)
-    
+        cluster = {"inUse": False, "data": None}
+        self.clusters = [cluster] * size
+
     def read(self, index):
-        return self.getClusters()[index][1]
+        return self.getClusters()[index]["data"]
     
     def write(self, index, value):
-        self.getClusters()[index][1] = value
+        self.getClusters()[index]["data"] = value
         
     def setInUse(self, index, inUse):
-        self.getClusters()[index][0] = inUse
-    
+        self.getClusters()[index]["inUse"] = inUse
+
     def getClusters(self):
         return self.clusters

@@ -10,6 +10,9 @@ class Program:
         self.name = name
         self.instructions = []
         
+    def __len__(self):
+        return len(self.getInstructions())
+        
     def addInstruction(self, instr):
         self.instructions.append(instr)
     

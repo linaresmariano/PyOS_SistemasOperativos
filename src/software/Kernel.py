@@ -13,7 +13,7 @@ from software.PCB import PCB
 
 class Kernel:
 
-    def __init__(self):
+    def __init__(self, cpu, mmu, hdd):
         # Internal state
         self.name = "Infra-Lalinhox"
         self.version = "v0.2"
@@ -21,7 +21,15 @@ class Kernel:
         self.modeKernel = False
         
         # Hardware
-        self.cpu = CPU(self)
+        self.cpu = cpu
+        self.cpu.setKernel(self)
+        
+        # Memory manager
+        self.mmu = mmu
+        self.mmu.setKernel(self)
+        
+        self.hdd = hdd
+        
         self.io = IO(self, 1)
         
         # Software
@@ -40,7 +48,7 @@ class Kernel:
     def executeProgram(self, aProgram):
         
         # Build new PCB
-        newPCB = PCB(self.nextPCBID, aProgram)
+        newPCB = PCB(self.nextPCBID, aProgram.getPath(), aProgram.length())
         self.scheduler.addPCB(newPCB)
         self.nextPCBID += 1
 

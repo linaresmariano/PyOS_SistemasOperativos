@@ -6,24 +6,28 @@ Created on 21/09/2012
 
 class PCB:
 
-    def __init__(self, PCBID, aProgram):
+    def __init__(self, PCBID, pathProgram, length):
         self.id = PCBID
         self.state = "ready"
         self.pc = 0
-        self.program = aProgram
-        
-    def getInstruction(self):
-        return self.program.getInstruction(self.pc)
+        self.path = pathProgram
+        self.length = length
     
     def increasePC(self):
         self.pc += 1
         
     def isEnded(self):
         # Returns 'true' if PC of currentPCB is higher than length of pcb instructions
-        return len(self.program.instructions) <= self.pc
+        return self.length <= self.pc
     
     def getId(self):
         return self.id
+    
+    def getPath(self):
+        return self.path
+    
+    def getPc(self):
+        return self.pc
 
 class PriorityPCB:
     def __init__(self, aPCB):

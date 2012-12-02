@@ -6,18 +6,25 @@ Created on 21/09/2012
 
 # Models a Program with their name and instructions
 class Program:
-    def __init__(self, name):
+    def __init__(self, name, path):
         self.name = name
         self.instructions = []
+        self.path = path
         
-    def __len__(self):
+    def length(self):
         return len(self.getInstructions())
+    
+    def getPath(self):
+        return self.path
         
     def addInstruction(self, instr):
         self.instructions.append(instr)
     
     def setInstructions(self, instrs):
         self.instructions = instrs
+        
+    def getInstructions(self):
+        return self.instructions
         
     def getInstruction(self, i):
         return self.instructions[i]

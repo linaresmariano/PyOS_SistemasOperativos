@@ -6,10 +6,14 @@ Created on 21/09/2012
 
 class CPU:
 
-    def __init__(self, aKernel):
+    def __init__(self, mmu):
         self.currentPCB = None
-        self.kernel = aKernel
+        self.kernel = None
         self.idle = True
+        self.mmu = mmu
+        
+    def setKernel(self, aKernel):
+        self.kernel = aKernel
     
     # Execute next instruction in currentPCB
     def tick(self):
@@ -20,7 +24,12 @@ class CPU:
         # If is in UserMode and self is not idle, execute next instr        
         if (not self.kernel.isModeKernel()) and (not self.isIdle()):
 
-            inst = self.currentPCB.getInstruction()
+            #pc = self.currentPCB.getPc()
+            #pid = self.currentPCB.getId()
+            #inst = self.mmu.fetchInstruction(pid, pc)
+            
+            # Fetch of pseudoMMU
+            inst = self.mmu.fetchInstruction(self.currentPCB)
             
             # If is to CPU, execute
             if inst.isCPUInstruction():
@@ -28,8 +37,8 @@ class CPU:
                 
                 # TODO: Log of actions
                 print("Intruction " + str(self.currentPCB.pc)
-                  + " of " + str(len(self.currentPCB.program.instructions))
-                  + " of " + str(self.currentPCB.program.name)
+                 # + " of " + str(len(self.currentPCB.program.instructions))
+                  #+ " of " + str(self.currentPCB.program.name)
                   + ". Process ID: " + str(self.currentPCB.getId()) + " executed in CPU")
                 
                 if self.currentPCB.isEnded():

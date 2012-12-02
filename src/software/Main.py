@@ -6,34 +6,48 @@ Created on 13/11/2012
 
 from software.Program import Program, Instruction
 from software.Kernel import Kernel
+from software.MMU import PMMU
+from hardware.CPU import CPU
+from hardware.HDD import HDD
 
 #==================================
 #       ''' Main execute '''
 #==================================
 
+
+
 ic = Instruction(True)
 ii = Instruction(False)
 
 # Sudoku
-p1 = Program("Sudoku")
+p1 = Program("Sudoku", "game/Sudoku")
 p1.setInstructions([ic,ic,ic,ii,ii,ic,ic])
-print(p1.name + ": " + str(len(p1.instructions)) + " instructions.")
+print(p1.name + ": " + str(p1.length()) + " instructions.")
 
 # TicTacToe
-p2 = Program("TicTacToe")
+p2 = Program("TicTacToe", "game/TTT")
 p2.setInstructions([ic,ic,ic,ic,ic,ic,ic])
-print(p2.name + ": " + str(len(p2.instructions)) + " instructions.")
+print(p2.name + ": " + str(p2.length()) + " instructions.")
 
 # Mines
-p3 = Program("Mines")
+p3 = Program("Mines", "game/Mines")
 p3.setInstructions([ic,ic,ic,ic,ic,ic,ic])
-print(p3.name + ": " + str(len(p3.instructions)) + " instructions.")
+print(p3.name + ": " + str(p3.length()) + " instructions.")
+
+
+
+mmu = PMMU()
+cpu = CPU(mmu)
+hdd = HDD()
 
 # Kernel
-k = Kernel()
+k = Kernel(cpu, mmu, hdd)
 k.executeProgram(p1)
+hdd.append(p1)
 k.executeProgram(p2)
+hdd.append(p2)
 k.executeProgram(p3)
+hdd.append(p3)
 
 '''
 if __name__ == '__main__':

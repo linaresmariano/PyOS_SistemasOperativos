@@ -36,13 +36,13 @@ class PageTable(list):
         return False
 
  
-    ''' @param idd: ID de la fila a agregar pagina
-    @param nroPage: numero de la nueva pagina
-    @param base: base de la nueva pagina
-    @param limit: limite de la nueva pagina 
-    Add new page at ROW whit id "idd", not readed 
-    '''
     def addPage(self, idd, nroPage, base, limit):
+        ''' @param idd: ID de la fila a agregar pagina
+        @param nroPage: numero de la nueva pagina
+        @param base: base de la nueva pagina
+        @param limit: limite de la nueva pagina 
+        Add new page at ROW whit id "idd", not readed 
+        '''
         self.getElementWithId(idd)["pages"].append({"index": nroPage, "base": base, "limit": limit, "readed": False})
 
 
@@ -71,6 +71,5 @@ class PageTable(list):
     def setReaded(self, idd, nroPage, readed, base=0):
         self.self.getElementWithId(idd)["pages"][nroPage]["readed"] = readed
         self.setBase(idd, nroPage, base)
-        
-        
+
         

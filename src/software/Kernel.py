@@ -11,7 +11,7 @@ from software.PCB import PCB
 
 class Kernel:
 
-    def __init__(self, cpu, mmu, hdd, scheduler):
+    def __init__(self, cpu, mmu, hdd, scheduler, io):
         # Internal state
         self.name = "Infra-Lalinhox"
         self.version = "v0.2"
@@ -28,7 +28,8 @@ class Kernel:
         
         self.hdd = hdd
         
-        self.io = IO(self, 1)
+        self.io = io
+        self.io.setKernel(self)
         
         # Software
         self.scheduler = scheduler

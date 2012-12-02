@@ -7,12 +7,15 @@ Created on 06/10/2012
 from hardware.Clock import Clock
 
 class IO:
-    def __init__(self, aKernel, time):
+    def __init__(self, time):
         self.clock = Clock(time, [self])  # Start clock
-        self.kernel = aKernel
+        self.kernel = None
         self.readyQueue = []
         self.currentPCB = None
     
+    def setKernel(self, aKernel):
+        self.kernel = aKernel
+
     def addPCB(self, aPCB):
         self.readyQueue.append(aPCB)
 

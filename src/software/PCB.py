@@ -29,11 +29,14 @@ class PCB:
     def getPc(self):
         return self.pc
 
+
+
 class PriorityPCB:
+
     def __init__(self, aPCB):
         self.pcb = aPCB
         # While less instructions, more priority
-        self.priority = len(aPCB.program.instructions)
+        self.priority = aPCB.length
     
     def isLower(self, aPCBWP):
         return self.priority < aPCBWP.priority

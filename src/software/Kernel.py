@@ -4,16 +4,14 @@ Created on 21/09/2012
 @author: MarianoLinares
 '''
 
-from hardware.CPU import CPU
 from hardware.IO import IO
 from hardware.Clock import Clock
-from software.Scheduler import FIFO, RR, PRIO
 from software.PCB import PCB
 #from software.Timer import Timer
 
 class Kernel:
 
-    def __init__(self, cpu, mmu, hdd):
+    def __init__(self, cpu, mmu, hdd, scheduler):
         # Internal state
         self.name = "Infra-Lalinhox"
         self.version = "v0.2"
@@ -33,9 +31,9 @@ class Kernel:
         self.io = IO(self, 1)
         
         # Software
-        #self.scheduler = FIFO(self)
-        self.scheduler = RR(self, 3)
-        #self.scheduler = PRIO(self)
+        self.scheduler = scheduler
+        self.scheduler.setKernel(self)
+        
         
         # Timer/Clock
         #self.timer = Timer([])

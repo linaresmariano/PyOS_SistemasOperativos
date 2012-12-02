@@ -8,10 +8,16 @@ from software.PCB import PriorityPCB
 
 class Scheduler(object):
     
-    def __init__(self, aKernel):
+    def __init__(self):
+        self.kernel = None
+        self.cpu = None
+        self.io = None
+        self.readyQueue = []
+        
+    def setKernel(self, aKernel):
+        self.kernel = aKernel
         self.cpu = aKernel.cpu
         self.io = aKernel.io
-        self.readyQueue = []
 
     #Dispatcher operations
     def contextSwitch(self):
@@ -52,8 +58,8 @@ class Scheduler(object):
 #     Strategy FCFS = FIFO
 #==============================
 class FIFO(Scheduler):
-    def __init__(self, aKernel):
-        super(FIFO, self).__init__(aKernel)
+    def __init__(self):
+        super(FIFO, self).__init__()
 
     # Prec: readyQueue has at least one element 
     def getNextPCB(self):
@@ -68,11 +74,12 @@ class FIFO(Scheduler):
 #      Strategy Round Robin
 #=================================
 class RR(FIFO):
-    def __init__(self, aKernel, quantum):
-        self.kernel = aKernel
-        self.cpu = aKernel.cpu
-        self.io = aKernel.io
-        self.readyQueue = []
+    def __init__(self, quantum):
+        super(RR, self).__init__()
+        #self.kernel = aKernel
+        #self.cpu = aKernel.cpu
+        #self.io = aKernel.io
+        #self.readyQueue = []
         self.quantum = quantum
         self.partial = 0
 
@@ -90,10 +97,11 @@ class RR(FIFO):
 #     Strategy "With Priority"
 #===================================
 class PRIO(Scheduler):
-    def __init__(self, aKernel):
-        self.cpu = aKernel.cpu
-        self.io = aKernel.io
-        self.readyQueue = []
+    def __init__(self):
+        super(PRIO, self).__init__()
+        #self.cpu = aKernel.cpu
+        #self.io = aKernel.io
+        #self.readyQueue = []
 
     def addPCB(self, aPCB):
         self.readyQueue.append(PriorityPCB(aPCB))

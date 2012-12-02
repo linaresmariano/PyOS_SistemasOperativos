@@ -4,7 +4,6 @@ Created on 21/09/2012
 @author: MarianoLinares
 '''
 
-from hardware.IO import IO
 from hardware.Clock import Clock
 from software.PCB import PCB
 #from software.Timer import Timer

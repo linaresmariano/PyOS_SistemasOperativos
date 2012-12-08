@@ -22,6 +22,9 @@ class Memory():
         
     def setInUse(self, index, inUse):
         self.getClusters()[index]["inUse"] = inUse
+        
+    def inUse(self,index):
+        return self.getClusters()[index]["inUse"]
 
     def getClusters(self):
         return self.clusters

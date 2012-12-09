@@ -145,6 +145,9 @@ class Kernel:
         
     def isModeKernel(self):
         return self.modeKernel
+    
+    def getHDD(self):
+        return self.hdd
         
         
 

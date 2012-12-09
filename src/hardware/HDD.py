@@ -4,7 +4,12 @@ Created on 17/11/2012
 @author: mariano
 '''
 
+from fileSystem.FileSystem import Folder
+from exceptionOS.Excepts import InvalidPath
+
 class HDD(list):
+    def __init__(self):
+        self.home = Folder("home", 0)
 
     def readProgram(self, path):
         '''
@@ -26,8 +31,42 @@ class HDD(list):
         for p in self:
             if p.getPath() == path:
                 return p.length()
+    '''       
+    def addFolder(self, name, path):
+        currentFolder = self.home
+        dest = path.split("/")
+        dest.remove("")
+        
+        first = dest[0] 
+        if first == currentFolder.name:
+            dest.remove(first)
+
+            if currentFolder.depth == len(dest):
+                currentFolder.addChild(Folder(name, currentFolder.depth + 1))
+                return
+            else:
+                if currentFolder.contains(folder):
+                    currentFolder = currentFolder.getChild(Folder)
+                    continue
+                else:
+                    break
+        else:
+            raise InvalidPath()
+'''
+
+      
+'''
+hdd = HDD()
+print(hdd.home)
+hdd.home.addSubFolder("mariano")
+print(hdd.home.childs)    
+#tes = "/home/mariano/development//git/python".split("/")
+
+'''
 
 
-class InvalidPath(Exception):
-    def __str__(self):
-        return 'InvalidPath'
+
+
+#print (tes)
+
+

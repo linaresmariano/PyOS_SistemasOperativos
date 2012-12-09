@@ -28,3 +28,6 @@ class Memory():
 
     def getClusters(self):
         return self.clusters
+    
+    def size(self):
+        return len(self.getClusters())

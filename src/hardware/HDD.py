@@ -4,12 +4,7 @@ Created on 17/11/2012
 @author: mariano
 '''
 
-from fileSystem.FileSystem import Folder
-from exceptionOS.Excepts import InvalidPath
-
 class HDD(list):
-    def __init__(self):
-        self.home = Folder("home", 0)
 
     def readProgram(self, path):
         '''
@@ -31,42 +26,36 @@ class HDD(list):
         for p in self:
             if p.getPath() == path:
                 return p.length()
-    '''       
-    def addFolder(self, name, path):
-        currentFolder = self.home
-        dest = path.split("/")
-        dest.remove("")
+            
+    def swap_to_pcb(self,aPCB,page_number,intrs):
+        mock_prog = MockProgramToSwap(aPCB,page_number,intrs)
+        self.append(mock_prog)
         
-        first = dest[0] 
-        if first == currentFolder.name:
-            dest.remove(first)
+    def get_swapped_page(self,pcb,page_number):
+        elm = None
+        for elem in self:
+            if elem.getPath() == pcb:
+                elm = pcb
+        if elm == None:
+            raise NoSwappedPageException()
+        return elm.getPageNumbers()[page_number]
+        
+class MockProgramToSwap():
+    def __init__(self,aPCB,page_number,instrs):
+        self.mock_path = aPCB
+        self.page_numbers = {}
+        
+    def getPath(self):
+        return self.mock_path
+        
+    def getPageNumbers(self):
+        return self.page_numbers
+    
 
-            if currentFolder.depth == len(dest):
-                currentFolder.addChild(Folder(name, currentFolder.depth + 1))
-                return
-            else:
-                if currentFolder.contains(folder):
-                    currentFolder = currentFolder.getChild(Folder)
-                    continue
-                else:
-                    break
-        else:
-            raise InvalidPath()
-'''
+class InvalidPath(Exception):
+    def __str__(self):
+        return 'InvalidPath'
 
-      
-'''
-hdd = HDD()
-print(hdd.home)
-hdd.home.addSubFolder("mariano")
-print(hdd.home.childs)    
-#tes = "/home/mariano/development//git/python".split("/")
-
-'''
-
-
-
-
-#print (tes)
-
-
+class NoSwappedPageException(Exception):
+    def __str__(self):
+        return "No Swapped Page"

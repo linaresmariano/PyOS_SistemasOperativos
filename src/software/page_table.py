@@ -39,28 +39,34 @@ class Page:
         '''
         self.swapped = False
         
-    def limit(self):
+    def getLimit(self):
         '''
         If the page is swapped, then a SwappedPageException 
         is raised, unless returns the limit of the page
         '''
-        return self.get_attr('limit')
+        if self.swapped():
+            raise SwappedPageException()
+        
+        return self.limit
     
-    def base(self):
+    def getBase(self):
         '''
         If the page is swapped, then a SwappedPageException 
         is raised, unless returns the base of the page
         in memory
         '''
-        return self.get_attr('base')
+        if self.swapped():
+            raise SwappedPageException()
+        
+        return self.base
     
-    def set_base(self, base):
+    def setBase(self, base):
         '''
         Sets the limit of page on memory
         '''
         self.base = base
         
-    def set_limit(self, limit):
+    def setLimit(self, limit):
         '''
         Sets the base of page on memory
         '''
@@ -101,7 +107,29 @@ class TableUnit:
         '''
         self.page(page_number).unswap()
         
-    def page(self, page_number):
+    def block(self):
+        '''
+        Sets to True the blocked pcb flag
+        '''
+        self.blocked = True
+        
+    def getPages(self):
+        return self.pages
+        
+        
+    def unblock(self):
+        '''
+        Sets to False the blocked pcb flag
+        '''
+        self.blocked = False
+        
+    def blocked(self):
+        '''
+        returns the blocked pcb flag value
+        '''
+        return self.blocked
+        
+    def page_by_num(self, page_number):
         '''
         Returns a page in a "page_number" position
         '''
@@ -160,13 +188,17 @@ class PageTable:
         
     # Public interface
         
-    def addPCB(self, aPCB):
+    def addPCB(self, aPCB, number_of_pages):
         '''
-        Create a new empty TableUnit, for specific PCB.
+        Create a new empty TableUnit, for specific PCB &
+        all page that the PCB'll use.
         If you try to create a new TableUnit, the old one 
-        is substituted for the new.
+        is substituted.
         '''
         new_table_unit = TableUnit()
+        for index in range(number_of_pages):
+            new_table_unit.addPage(index, 0, 0, True)
+            
         self.table[aPCB] = new_table_unit
         
     def removePCB(self, aPCB):
@@ -182,6 +214,22 @@ class PageTable:
         '''
         self.table[aPCB].addPage(page_number, base, limit, swapped)
         
+    # Interface to adapter to MMU requirements
+    
+    def baseByPCBId(self, aPCBId, page_number):
+        '''
+        Look for a PCB by its id and then calls
+         'base(PCB,page) method
+        
+        '''
+        pcb = self.getPCBById(aPCBId)
+        return self.base(pcb, page_number)
+        
+    def kill(self, aPCBId):
+        pcb = self.getPCBById(aPCBId)
+        self.removePCB(pcb)
+        
+        
     # Protected interface
         
     def delPCB(self, aPCB):
@@ -189,6 +237,24 @@ class PageTable:
         Protected method to delete the TableUnit for a Specific PCB.
         '''
         del self.table[aPCB]
+        
+    def block(self, aPCB):
+        '''
+        Protected method to block a specific PCB
+        '''
+        self.table[aPCB].block()
+        
+    def unblock(self, aPCB):
+        '''
+        Protected method to unblock a specific PCB
+        '''
+        self.table[aPCB].unblock()
+        
+    def blocked(self, aPCB):
+        '''
+        Protected method to get the block flag of a specific PCB
+        '''
+        return self.table[aPCB].blocked()
         
     def limit(self, aPCB, page_number):
         '''
@@ -230,13 +296,27 @@ class PageTable:
         Protected method to get the page of a specific PCB &
         page_number
         '''
-        return self.table[aPCB].page(page_number)        
+        return self.table[aPCB].page(page_number)
+    
+# Private Interface
+
+    def getPCBById(self, aPCBId):    
+        pcbs = self.table.keys
+        real_pcb = None
+        for pcb in pcbs:
+            if(pcb.getId() == aPCBId):
+                real_pcb = pcb
+        if(real_pcb == None):
+            raise CantFindPCBByIDException()        
         
 # Exceptions
 
 class SwappedPageException(Exception):
     def __str__(self):
         return "Swapped page Exception"
+    
         
-        
+class  CantFindPCBByIDException(Exception):        
+    def __str__(self):
+        return "Can't find a PCB by id"
 

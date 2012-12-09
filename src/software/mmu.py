@@ -127,13 +127,13 @@ class Paginacion(MMU):
         
         for free_page in free_memory_pages:
             page = virtual_paged_instrs.pop()
-            self.getPageTable().addPage(aPCB , paged_instrs.index(page) , free_page , free_page + len(page), False)
+            self.getPageTable().addPage(aPCB , paged_instrs.index(page) , free_page , len(page), False)
             self.load_on_memory(page, free_page)
             if(not virtual_paged_instrs):
                 break
             
         for to_swapped_pages in virtual_paged_instrs:
-            self.getHDD().swap_to_pcb(aPCB)
+            self.getHDD().swap_to_pcb(aPCB, paged_instrs.index(to_swapped_pages ), to_swapped_pages)
             
     def page(self, instrs):
         paged_instrs = []

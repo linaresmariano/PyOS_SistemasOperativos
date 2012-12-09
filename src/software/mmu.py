@@ -8,7 +8,7 @@ from page_table import PageTable, SwappedPageException
 
 class MMU:        
     
-    def setKernel(self,kernel):
+    def setKernel(self, kernel):
         self.kernel = kernel
         
     def __init__(self, memory, hdd, page_table):
@@ -118,6 +118,79 @@ class MMU:
     def setPageTable(self, value):
         self.page_table
         
+    def writeOnMemory(self, page, free_page_number):
+        '''
+        Write all instructions on 'page' from 'free_page_number'.
+        If there are any data, this is overwrited.
+        '''
+        count = 0
+        for inst in page:
+            self.getMemory().write(free_page_number + count, inst)
+            count += 1
+        
+        
+        
+class AsignacionContinua(MMU):
+    def __init__(self, memory, hdd, page_table):
+        MMU.__init__(self, memory, hdd, page_table)
+        
+    def load(self, aPCB, instrs):
+        if (len(instrs) > len(self.getMemory().size())):
+            raise ProgramTooLongException()
+        table = self.getPagetable()
+        table.addPCB(aPCB, self.numPagesFor(aPCB))
+        base = self.getBaseFor(instrs)
+        table.setPage(self, aPCB, 0, base, len(instrs), False)
+        self.writeOnMemory(instrs, base)
+        
+    def getBaseFor(self,instrs):
+        all_empty_cluster_lists = self.getEmptyClusters() # return a tuple (base,length) of the each free place
+        all_empty_cluster_lists = [ list for list in all_empty_cluster_lists if list[1] >= len(instrs) ]
+        
+        the_first = all_empty_cluster_lists[0]
+        sorted_lists = sorted(all_empty_cluster_lists , key = lambda list: list[1])
+        the_best = sorted_lists.pop()
+        the_worst = sorted_lists.pop(0)
+        
+        #Seleccionar cual!
+        if the_first:
+            return the_first
+        elif the_worst:
+            return the_worst
+        elif the_best:
+            return the_best
+         
+        #Si el espacio despues de compactar es suficiente, copacta y retorta la base que quedó
+        place = self.placeAfterCompact()
+        if (place >= len(instrs)):
+            self.compact()
+            return self.fisrtFreeClusterList()
+        all_free_place = 0
+        for place in self.getEmptyClusters():
+            all_free_place += place[1]
+            
+        #Swappea procesos hasta tener el espacio suficiente
+        while(all_free_place < len(instrs)):
+            self.swapSomePCB()
+            all_free_place = 0
+            for place in self.getEmptyClusters():
+                all_free_place += place[1]
+                
+        return self.fisrtFreeClusterList()
+        
+    def getLenBlock(self, aPCB):
+        return self.getLenPCB(aPCB)
+
+    def calcNumPages(self, aPCB):
+        return 1
+        
+    def numPagesFor(self, aPCB):
+        return self.calcNumPages(aPCB)
+    
+        
+    def getLenPCB(self, aPCB):
+        return self.hdd.lenProgram(aPCB.getPath())
+        
 # Sub-class of MMU
 
 class Paginacion(MMU):
@@ -160,16 +233,6 @@ class Paginacion(MMU):
         
     def numPagesFor(self, aPCB):
         return self.calcNumPages(aPCB)
-    
-    def writeOnMemory(self, page, free_page_number):
-        '''
-        Write all instructions on 'page' from 'free_page_number'.
-        If there are any data, this is overwrited.
-        '''
-        count = 0
-        for inst in page:
-            self.getMemory().write(free_page_number + count, inst)
-            count += 1
             
     def paginate(self, instrs):
         '''
@@ -218,7 +281,7 @@ class Paginacion(MMU):
         '''
         instrs = self.getHDD().getSwappedPage(aPCB, page_number)
         free_memory_page = self.getForcedFreePage()
-        self.getPageTable().setPage(aPCB,page_number,free_memory_page,len(instrs),False)
+        self.getPageTable().setPage(aPCB, page_number, free_memory_page, len(instrs), False)
         self.writeOnMemory(instrs, free_memory_page)
         
     def getForcedFreePage(self):
@@ -249,7 +312,7 @@ class Paginacion(MMU):
                 base = page.getBase()
                 limit = page.getLimit()
                 table_unit.swap(page_number)
-                instrs = [ self.getMemory().read(base+ints_index) for ints_index in range(limit) ]
+                instrs = [ self.getMemory().read(base + ints_index) for ints_index in range(limit) ]
                 self.getHDD().swapPageToPCB(process, page_number, instrs)
                 return base
             
@@ -260,3 +323,7 @@ class Paginacion(MMU):
 class AbstractMethodException(Exception):
     def __str__(self):
         return "This method must be implemented on sub-class"
+
+class ProgramTooLongException(Exception):
+    def __str__(self):
+        return "This program is too long to be executed"

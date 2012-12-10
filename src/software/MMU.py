@@ -15,7 +15,7 @@ class PMMU:
         prog = self.kernel.hdd.readProgram(path)
 
         return prog.getInstruction(pcb.getPc())
-            
+
 
 # Abstract
 class MMU:

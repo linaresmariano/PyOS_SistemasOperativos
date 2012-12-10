@@ -7,10 +7,13 @@ Created on 13/11/2012
 from software.Program import Program, Instruction
 from software.Kernel import Kernel
 from software.MMU import PMMU
+from software.mmu import Paginacion
 from software.Scheduler import RR
 from hardware.CPU import CPU
 from hardware.HDD import HDD
 from hardware.IO import IO
+from hardware.Memory import Memory
+from software.page_table import PageTable
 
 #==================================
 #       ''' Main execute '''
@@ -40,9 +43,14 @@ print(p3.name + ": " + str(p3.length()) + " instructions.")
 #========================
 #   Hardware Computer
 #========================
-mmu = PMMU()
-cpu = CPU(mmu)
+#mmu = PMMU()
+memory = Memory(1024)
 hdd = HDD()
+
+pageTable = PageTable()
+
+mmu = Paginacion(3, memory, hdd, pageTable)
+cpu = CPU(mmu)
 io = IO(1)
 
 #=======================
@@ -57,12 +65,15 @@ kernel = Kernel(cpu, mmu, hdd, scheduler, io)
 
 
 # Ejecutar programas
-kernel.executeProgram(p1)
 hdd.append(p1)
-kernel.executeProgram(p2)
+kernel.executeProgram(p1)
+
 hdd.append(p2)
-kernel.executeProgram(p3)
+kernel.executeProgram(p2)
+
 hdd.append(p3)
+kernel.executeProgram(p3)
+
 
 
 

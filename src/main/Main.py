@@ -6,7 +6,7 @@ Created on 13/11/2012
 
 from software.Program import Program, Instruction
 from software.Kernel import Kernel
-from software.MMU import PMMU
+#from software.MMU import PMMU
 from software.mmu import Paginacion
 from software.Scheduler import RR
 from hardware.CPU import CPU
@@ -66,12 +66,11 @@ kernel = Kernel(cpu, mmu, hdd, scheduler, io)
 
 # Ejecutar programas
 hdd.append(p1)
-kernel.executeProgram(p1)
-
 hdd.append(p2)
-kernel.executeProgram(p2)
-
 hdd.append(p3)
+
+kernel.executeProgram(p1)
+kernel.executeProgram(p2)
 kernel.executeProgram(p3)
 
 

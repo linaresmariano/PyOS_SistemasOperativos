@@ -43,7 +43,7 @@ class MMU:
             return self.fetchInstruction(aPCB, pc)
         inst = self.getMemory().read(base + desp)
         
-#        return inst        
+        return inst        
     
     def swap(self):
         '''
@@ -138,9 +138,9 @@ class AsignacionContinua(MMU):
         if (len(instrs) > len(self.getMemory().size())):
             raise ProgramTooLongException()
         table = self.getPagetable()
-        table.addPCB(aPCB, self.numPagesFor(aPCB))
+        #table.addPCB(aPCB, self.numPagesFor(aPCB))
         base = self.getBaseFor(instrs)
-        table.setPage(self, aPCB, 0, base, len(instrs), False)
+        table.setPage(aPCB, 0, base, len(instrs), False)
         self.writeOnMemory(instrs, base)
         
     def getBaseFor(self,instrs):
@@ -149,8 +149,8 @@ class AsignacionContinua(MMU):
         
         the_first = all_empty_cluster_lists[0]
         sorted_lists = sorted(all_empty_cluster_lists , key = lambda list: list[1])
-        the_best = sorted_lists.pop()
-        the_worst = sorted_lists.pop(0)
+        the_best = sorted_lists.pop(0)
+        the_worst = sorted_lists.pop()
         
         #Seleccionar cual!
         if the_first:
@@ -160,11 +160,11 @@ class AsignacionContinua(MMU):
         elif the_best:
             return the_best
          
-        #Si el espacio despues de compactar es suficiente, copacta y retorta la base que quedó
+        #Si el espacio despues de compactar es suficiente, copacta y retorta la base que quedo
         place = self.placeAfterCompact()
         if (place >= len(instrs)):
             self.compact()
-            return self.fisrtFreeClusterList()
+            return self.firstFreeClusterList()
         all_free_place = 0
         for place in self.getEmptyClusters():
             all_free_place += place[1]
@@ -204,7 +204,7 @@ class Paginacion(MMU):
         If there is not place, the rest process pages are swapped.
         Precondition: have called addPCB() method of Table()
         '''
-        paged_instrs = self.paginate(insts)
+        paged_instrs = self.page(insts)
         free_memory_pages_bases = self.getFreeMemoryPagesBases()
         
         virtual_paged_instrs = paged_instrs[:]
@@ -231,40 +231,10 @@ class Paginacion(MMU):
         '''
         return self.getLenPCB(aPCB) / self.getLenBlock() + 1
         
-<<<<<<< HEAD
-    def load(self, aPCB, insts):
-        '''
-        
-        '''
-        paged_instrs = self.page(insts)
-        free_memory_pages = self.getFreeMemoryPages()
-        
-        virtual_paged_instrs = paged_instrs[:]
-        
-        for free_page in free_memory_pages:
-            page = virtual_paged_instrs.pop(0)
-            self.getPageTable().addPage(aPCB , paged_instrs.index(page) , free_page , len(page), False)
-            self.load_on_memory(page, free_page)
-            if(not virtual_paged_instrs):
-                break
-=======
     def numPagesFor(self, aPCB):
         return self.calcNumPages(aPCB)
->>>>>>> branch 'master' of git@github.com:infradosis/PyOS_SistemasOperativos.git
-            
-<<<<<<< HEAD
-        for to_swapped_pages in virtual_paged_instrs:
-            # Falta indicar que numero de pagina es y las instrucciones
-            self.getHDD().swap_to_pcb(aPCB)
             
     def page(self, instrs):
-=======
-    def paginate(self, instrs):
-        '''
-        Make a list of instructions to a list of list of instructions, 
-        the length each list of instructions is the length of a page. 
-        '''
->>>>>>> branch 'master' of git@github.com:infradosis/PyOS_SistemasOperativos.git
         paged_instrs = []
         temp_page = []
         for instr in instrs:

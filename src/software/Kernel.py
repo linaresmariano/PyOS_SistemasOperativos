@@ -47,7 +47,14 @@ class Kernel:
         
         # Build new PCB
         newPCB = PCB(self.nextPCBID, aProgram.getPath(), aProgram.length())
+        
+        # Add pcb to scheduler
         self.scheduler.addPCB(newPCB)
+        
+        # Load pcb in mmu's pageTable
+        self.mmu.addPCB(newPCB)
+        
+        
         self.nextPCBID += 1
 
         # If cpu is idle, switch now

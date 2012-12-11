@@ -142,7 +142,7 @@ class TableUnit:
         '''
         Returns a page in a "page_number" position
         '''
-        self.pages[page_number]
+        return self.pages[page_number]
         
     def getLimit(self, page_number):
         '''

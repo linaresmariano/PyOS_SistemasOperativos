@@ -172,7 +172,7 @@ class AsignacionContinua(MMU):
         #descomentar este codigo despues de implementar 'self.getBaseByEstrategy(instruciones)':
         
 #        base = self.getBaseFor(instrs)
-#        if not base:
+#        if base:
 #            return base 
         
          

@@ -21,14 +21,14 @@ class MMU:
     def fetchInstruction(self, aPCB):
         pcb = aPCB
         pc = pcb.getPc()
-        page = pc / self.getLenBlock()
-        desp = pc % self.getLenBlock()
+        page = pc / self.getLenBlock(aPCB)
+        desp = pc % self.getLenBlock(aPCB)
         try:
             base = self.getPageTable().getBase(aPCB, page)
         except SwappedPageException:
             self.unswap(aPCB, page)
             return self.fetchInstruction(aPCB, pc)
-        inst = self.getMemory().read(base + desp)
+        inst = self.getMemory().read(base[0] + desp)
         
         return inst        
     
@@ -152,7 +152,7 @@ class Paginacion(MMU):
         for to_swapped_pages in virtual_paged_instrs:
             self.getHDD().swapPageToPCB(aPCB, paged_instrs.index(to_swapped_pages), to_swapped_pages)
         
-    def getLenBlock(self):
+    def getLenBlock(self,aPCB=None):
         '''
         Return the size of a page
         '''
@@ -304,7 +304,7 @@ class Fit():
         
         '''
         tuples = self.getFreePlaceBases()
-        if tuples:
+        if tuples != None:
             return self.correctBaseFromTuples(tuples)
         else:
             return None    
@@ -316,18 +316,18 @@ class AsignacionContinua(MMU):
         
     def load(self, aPCB, instrs):
         # Si hay mas instrucciones que espacio total de la memoria, Se lanza una excepcion
-        if (len(instrs) > len(self.getMemory().size())):
+        if (len(instrs) > self.getMemory().size()):
             raise ProgramTooLongException()
         
-        table = self.getPagetable()
+        table = self.getPageTable()
         # El metodo 'getBaseFor(instrs)' debe usar el Primer, mejor o peor ajuste (Fit())
         # o compactar si sirve, o en ultimo caso empezar a swapear procesos hasta tener 
         # lugar suficiente.
         base = self.getBaseFor(instrs)
         
         # Settea la unica pagina de la tabla. (PCB, numero_de_pagina,base,limit,Sswapped)
-        table.setPage(aPCB, 0, base, len(instrs), False)
-        self.writeOnMemory(instrs, base)
+        table.setPage(aPCB, 0, base[0], len(instrs), False)
+        self.writeOnMemory(instrs, base[0])
         
     def getBaseByEstrategy(self, instrs):
         return self.getFit().getBaseFor(instrs)
@@ -338,7 +338,7 @@ class AsignacionContinua(MMU):
         posible Base segun la estrategia de 'fit'.
         '''        
         base = self.getBaseByEstrategy(instrs)
-        if base:
+        if base != None:
             return base 
         
         # Si no hay un bloque que se pueda usar, miro cuanto es la suma de los espacios vacio.
@@ -369,7 +369,7 @@ class AsignacionContinua(MMU):
           of a unused block of memory and lenght is the lenght of this block
         '''
         tuples = []
-        tuple = (0, 0)  # (base,length) tuples
+        tuple = [0, 0]  # (base,length) tuples
         contando = False
         memory = self.getMemory()
         
@@ -383,18 +383,21 @@ class AsignacionContinua(MMU):
             if contando:
                 if (memory.inUse(index)):
                     tuples.append(tuple)
-                    tuple = (0, 0)
+                    tuple = [0, 0]
                     contando = False
                 else:
                     tuple[1] = tuple[1] + 1
-            elif (not memory.isUse(index)):
+            elif (not memory.inUse(index)):
                 contando = True
                 tuple[0] = index
                 tuple[1] = 1
                 
         if contando:
-            tuples.append(tuples)
+            tuples.append(tuple)
         return tuples            
+    
+    def compact(self):
+        pass
     
     def allFreePlace(self):
         '''
@@ -450,7 +453,7 @@ class WorstFit(Fit):
           con el 'lenght' mas grande
         '''
         sorted_tuples = sorted(tuples, key=lambda tuple: tuple[1])
-        return sorted_tuples.pop()[0]
+        return sorted_tuples.pop(0)
     
 class BestFir(Fit):
     def __init__(self, mmu):

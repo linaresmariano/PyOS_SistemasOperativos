@@ -19,7 +19,8 @@ class TestIO(unittest.TestCase):
         when(self.pcb1).getId().thenReturn(1)
         self.pcb2 = mock(PCB)
         when(self.pcb2).getId().thenReturn(2)
-        self.io = IO(self.kernel, 1)
+        self.io = IO(1)
+        self.io.setKernel(self.kernel)
         
     def tearDown(self):
         self.io.stop()

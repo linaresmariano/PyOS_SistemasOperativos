@@ -162,7 +162,7 @@ class Paginacion(MMU):
         '''
         return the number of pages needed to specific PCB
         '''
-        return self.getLenPCB(aPCB) / self.getLenBlock() + 1
+        return (self.getLenPCB(aPCB) / self.getLenBlock()) + 1
         
     def numPagesFor(self, aPCB):
         return self.calcNumPages(aPCB)

@@ -12,7 +12,9 @@ class Memory():
     '''
     def __init__(self, size):
         cluster = {"inUse": False, "data": None}
-        self.clusters = [cluster] * size
+        self.clusters = []
+        for _ in range(size):
+            self.clusters.append(dict(cluster))
 
     def read(self, index):
         return self.getClusters()[index]["data"]
@@ -31,4 +33,8 @@ class Memory():
     
     def size(self):
         return len(self.getClusters())
+    
+    
+    
+m = Memory(100)
     

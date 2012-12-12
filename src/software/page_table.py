@@ -116,6 +116,9 @@ class TableUnit:
         '''
         self.page(page_number).unswap()
         
+    def getAllPages(self):
+        return self.getPages().values()
+        
     def block(self):
         '''
         Sets to True the blocked pcb flag
@@ -250,6 +253,14 @@ class PageTable:
         
         
     # Protected interface
+    
+    def getAllPCBs(self):
+        #Obtengo todos los procesos
+        return self.getTable().keys()
+    
+    def getAllTableUnits(self):
+        #Obtengo todas las unidades de tabla
+        return self.getTable().values()
         
     def delPCB(self, aPCB):
         '''

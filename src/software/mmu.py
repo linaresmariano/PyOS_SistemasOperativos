@@ -4,7 +4,7 @@ Created on 08/12/2012
 @author: leandro
 '''
 
-from page_table import PageTable, SwappedPageException
+from page_table import SwappedPageException
 
 class MMU:        
     
@@ -32,12 +32,6 @@ class MMU:
         
         return inst        
     
-    def swap(self):
-        '''
-        Que hace
-        '''
-        pass
-    
     def kill(self, aPCBId):
         '''
         Delete a PCB from the page table by pcb id
@@ -59,7 +53,7 @@ class MMU:
         program = self.getHDD().readProgram(aPCB.getPath())
         instrs = program.getInstructions()
         
-        # create a new empty entry for a PCB, with its Pages
+        # create a new empty entry for a PCB, with its number of pages
         self.getPageTable().addPCB(aPCB, self.numPagesFor(aPCB))
         
         # try to load pages on memory
@@ -120,103 +114,106 @@ class MMU:
 class AsignacionContinua(MMU):
     def __init__(self, memory, hdd, page_table):
         MMU.__init__(self, memory, hdd, page_table)
+        self.fit = WorstFit(self)
         
     def load(self, aPCB, instrs):
-        #Si hay más instrucciones que espacio total de la memoria, Se lanza una excepcion
+        # Si hay más instrucciones que espacio total de la memoria, Se lanza una excepcion
         if (len(instrs) > len(self.getMemory().size())):
             raise ProgramTooLongException()
         
         table = self.getPagetable()
-        #El metodo 'getBaseFor(instrs)' debe ser el Primer, mejor o peor ajuste
+        # El metodo 'getBaseFor(instrs)' debe ser el Primer, mejor o peor ajuste
+        # o compactar, o en ultimo caso empezar a swapear procesos hasta tener 
+        # lugar suficiente.
         base = self.getBaseFor(instrs)
         
-        #Settea la unica pagina de la tabla. (PCB, numero_de_pagina,base,limit,Sswapped)
+        # Settea la unica pagina de la tabla. (PCB, numero_de_pagina,base,limit,Sswapped)
         table.setPage(aPCB, 0, base, len(instrs), False)
         self.writeOnMemory(instrs, base)
         
-    def getBaseFor(self,instrs):
+    def getBaseByEstrategy(self, instrs):
+        return self.getFit().getBaseFor(instrs)
+        
+    def getBaseFor(self, instrs):
         '''
         Este metodo usa 'getBaseByEstrategy(instruciones)' en parte para devolver una
         posible Base segun la estrategia de 'fit'.
-        '''
-        '''
-        < === Desde aca === >
-        '''
-        # should return a tuple (base,length) of the each free place
-        all_empty_free_places = self.getEmptyClusters()
+        '''        
+        base = self.getBaseByEstrategy(instrs)
+        if base:
+            return base 
         
-        #Tomo solo los espacion que sean mayores o iguales a el espacio necesario
-        #  por el largo de las instrucciones
-        all_empty_free_places = [ list for list in all_empty_free_places if list[1] >= len(instrs) ]
-        
-        if not all_empty_free_places:
-            the_first = all_empty_free_places[0] # Tomo el primer espacio valido (first fit)
-        
-            #Ordeno la lista, de menor a mayor
-            sorted_lists = sorted(all_empty_free_places , key = lambda list: list[1])
-            #Tomo el mejor ajuste(el primero ya que es el menor)
-            the_best = sorted_lists.pop(0)
-            #Tomo el peor, ya que el ultimo es el más grande
-            the_worst = sorted_lists.pop()
-        
-            #Seleccionar cual! Yo retorno el primero
-            return the_first
-        '''
-        
-        Es cosa de un medoto 'self.getBaseByEstrategy()'
-        Que debe retornar la base segun la estrategia.
-        Si no hubiera, retorna nil.
-        
-        < === Hasta aca === >
-        '''
-        #descomentar este codigo despues de implementar 'self.getBaseByEstrategy(instruciones)':
-        
-#        base = self.getBaseFor(instrs)
-#        if base:
-#            return base 
-        
-         
-        #Si no hay un bloque que se pueda usar, miro cuanto es la suma de los espacios vacio.
+        # Si no hay un bloque que se pueda usar, miro cuanto es la suma de los espacios vacio.
         # Si esa suma (free_place_size) es mayor o igual al largo de las instrucciones, entonces
         # compacto y tomo la primera base libre
-        free_place_size = self.allFreePlace() #Retorna la cantidad total de espacio libre
+        free_place_size = self.allFreePlace()  # Retorna la cantidad total de espacio libre
         
-        #Compacto y retorno la primera base
+        # Compacto y retorno la primera base
         if (free_place_size >= len(instrs)): 
             self.compact()
             return self.firstFreePlace()
         
-        #Empizo a swappear otros procesos hasta que el espacio sea suficiente
+        # Empizo a swappear otros procesos hasta que el espacio sea suficiente
         
         # 'all_free_place' = todo el espacio libre hasta ahora (igual a  a 'free_place_size') 
         all_free_place = self.allFreePlace()
             
-        #Mientras no tenga espacio para poner el Proceso, swappeo otros procesos
+        # Mientras no tenga espacio para poner el Proceso, swappeo otros procesos
         while(all_free_place < len(instrs)):
             self.swapSomePCB()
             all_free_place = self.AllFreePlace()
                 
         return self.allFreePlace()
     
-    '''
-    To Do List:
-        self.getEmptyClusters()
-        #Debe retornar tuplas (base,largo), donde la base es donde empiza un bloque vacio de memoria
-        # y largo es cuanto espacio vacio desde esa base, mapeando toda la memoria
+    def getFreePlaceBases(self):
+        '''
+        Return all (base,lenght) tuples where base is the begin 
+          of a unused block of memory and lenght is the lenght of this block
+        '''
+        tuples = []
+        tuple = (0, 0)  # (base,length) tuples
+        contando = False
+        memory = self.getMemory()
         
-        self.allFreePlace()
-        #Debe retornar la suma de todos los espacio vacios en memoria
-        # hit: podria usarse el metodo anterior ;)
-        
-        self.firstFreePlace()
-        #Debe retornar la primer base libre
-        
-        self.getBaseByEstrategy(instruciones)
-        #Que debe retornar la base segun la estrategia.
-        #Si no hubiera, retorna nil.
+        #Si estoy contando y el cluster sobre el q estoy (index) está en uso, 
+        #  dejo de contar y agrego la tupla al conjunto.
+        #Si estoy contando y el cluster sobre el q estoy no está en uso,
+        #  sumo 1 al tamaño del bloque libre (segundo elemento de la tupla)
+        #Si no estoy contando y el cluster sobre el que estoy no esta en uso;
+        #  seteo la base (index), pongo el lenght en 1 y comienzo a contat
+        for index in range(memory.size()):
+            if contando:
+                if (memory.inUse(index)):
+                    tuples.append(tuple)
+                    tuple = (0, 0)
+                    contando = False
+                else:
+                    tuple[1] = tuple[1] + 1
+            elif (not memory.isUse(index)):
+                contando = True
+                tuple[0] = index
+                tuple[1] = 1
+                
+        if contando:
+            tuples.append(tuples)
+        return tuples            
     
+    def allFreePlace(self):
+        '''
+        Return all free place in memory
+        '''
+        tuples = self.getFreePlaceBases()
+        # reduce(funcion_de_dos_parametro, lista_a_reducir) = inject
+        suma = reduce(lambda x, y: x[1] * y[1], tuples)
+        return suma
     
-    '''
+    def firstFreePlace(self):
+        '''
+        Return the first free cluster (called too 'base')
+        '''
+        for index in range(self.getMemory().size()):
+            if not self.getMemory().inUse(index):
+                return index
         
     def getLenBlock(self, aPCB):
         return self.getLenPCB(aPCB)
@@ -230,6 +227,12 @@ class AsignacionContinua(MMU):
         
     def getLenPCB(self, aPCB):
         return self.hdd.lenProgram(aPCB.getPath())
+    
+    def getFit(self):
+        return self.fit
+    
+    def setFit(self, fit):
+        self.fit = fit
         
 # Sub-class of MMU
 
@@ -250,30 +253,30 @@ class Paginacion(MMU):
         If there is not place, the rest process pages are swapped.
         Precondition: have called addPCB() method of Table()
         '''
-        #self.page(instrs)Divide un conunto de instruciones en conjuntos mas chicos de tamaño de pagina
+        # self.page(instrs)Divide un conunto de instruciones en conjuntos mas chicos de tamaño de pagina
         # Ej.: con una lista de 30 instruciones, si la pagina tiene tamaño 10, este metodo
         #  generará una lista con 3 listas de instruciones: [Instruciones * 30] => [ [Inst* 10],[Inst* 10],[Inst* 10] ]
-        paged_instrs = self.page(insts)
+        paged_instrs = self.pagimate(insts)
         
-        #Mapea toda la memoria, buscando todos las bases libre
+        # Mapea toda la memoria, buscando todos las bases libre
         free_memory_pages_bases = self.getFreeMemoryPagesBases()
         
-        #Se hace una copia, para luego saber el index de la pagina
+        # Se hace una copia, para luego saber el index de la pagina
         virtual_paged_instrs = paged_instrs[:]
         
-        #Por cada pagina libre, se le asigna un bloque de las instrucciones
+        # Por cada pagina libre, se le asigna un bloque de las instrucciones
         for free_page_base in free_memory_pages_bases:
-            #Obtengo el primer bloque de instrucciones
+            # Obtengo el primer bloque de instrucciones
             page = virtual_paged_instrs.pop(0)
-            #Seteo la pagina de la Page table
+            # Seteo la pagina de la Page table
             self.getPageTable().setPage(aPCB , paged_instrs.index(page) , free_page_base , len(page), False)
             self.writeOnMemory(page, free_page_base)
             
-            #si no tengo más bloques q asignar, se sale del loop
+            # si no tengo más bloques q asignar, se sale del loop
             if(not virtual_paged_instrs):
                 break
             
-        #Si quedo algo sin asignar, lo swapeo a disco
+        # Si quedo algo sin asignar, lo swapeo a disco
         for to_swapped_pages in virtual_paged_instrs:
             self.getHDD().swapPageToPCB(aPCB, paged_instrs.index(to_swapped_pages), to_swapped_pages)
         
@@ -292,7 +295,7 @@ class Paginacion(MMU):
     def numPagesFor(self, aPCB):
         return self.calcNumPages(aPCB)
             
-    def page(self, instrs):
+    def pagimate(self, instrs):
         '''
         Divide un conjunto de instruciones en bloques del tamaño de pagina
         '''
@@ -313,19 +316,19 @@ class Paginacion(MMU):
         '''
         Return the free pages on memory
         '''
-        #Obtengo todas las unidades de tabla
-        all_table_units = self.getPageTable().getTable().values()
-        #Ahora todas las paginas de esas Unidades de tabla
+        # Obtengo todas las unidades de tabla
+        all_table_units = self.getPageTable().getAllTableUnits()
+        # Ahora todas las paginas de esas Unidades de tabla
         all_tables_unit_pages = []
         for table_unit in all_table_units:
-            all_tables_unit_pages.extend(table_unit.getPages().values())
-        #De esas paginas, me quedo con las Bases las que ocupadas (no estan swapeadas a disco)
+            all_tables_unit_pages.extend(table_unit.getAllPages())
+        # De esas paginas, me quedo con las Bases las que ocupadas (no estan swapeadas a disco)
         base_ocupied_pages = [ page.getBase() for page in all_tables_unit_pages if not page.isSwapped() ]
         
-        #Tomo todas las bases de la memoria
+        # Tomo todas las bases de la memoria
         all_base_memory_pages = self.getMemoryPagesBases()
         
-        #Me quedo con todas las bases de la memoria que no esten entre las bases que estan ocupadas
+        # Me quedo con todas las bases de la memoria que no esten entre las bases que estan ocupadas
         # Algo asi como: lista_de_bases_totales - lista_de_bases_ocupadas = lista_de_bases_libres
         free_pages = [x for x in all_base_memory_pages if not (x in base_ocupied_pages)]
         return free_pages
@@ -335,10 +338,10 @@ class Paginacion(MMU):
         return all bases to a specific memory size
         '''
         memory_size = self.getMemory().size()
-        #Cantidad de paginas en memoria
+        # Cantidad de paginas en memoria
         canti_pages = memory_size / self.getLenBlock()
         
-        #retora una lista de todas las bases de memoria
+        # retora una lista de todas las bases de memoria
         # por cada cada numero en el rango 1..cantidad_de_paginas, multiplicado por 
         # el tamaño del pagina.
         return [ page * self.getLenBlock() for page in range(canti_pages) ]
@@ -348,14 +351,14 @@ class Paginacion(MMU):
         '''
         Load in memory the page that is in HDD.
         '''
-        #Si hay una pagina libre, la retorna, sino swapea algun proceso y retorna
+        # Si hay una pagina libre, la retorna, sino swapea algun proceso y retorna
         # la base que quedo libre.
         # Debe actualizar la tabla respecto a ese proceso que se saco de memoria
         free_memory_page = self.getForcedFreePage()
         
-        #Obtiene las instruciones a cargar en memoria
+        # Obtiene las instruciones a cargar en memoria
         instrs = self.getHDD().getSwappedPage(aPCB, page_number)
-        #Settea la pagina del PCB 
+        # Settea la pagina del PCB 
         self.getPageTable().setPage(aPCB, page_number, free_memory_page, len(instrs), False)
         self.writeOnMemory(instrs, free_memory_page)
         
@@ -366,7 +369,7 @@ class Paginacion(MMU):
         '''
         free_bases = self.getFreeMemoryPagesBases()
         if not free_bases:
-            #Swapea algun PCb y acualiza la tabla
+            # Swapea algun PCb y acualiza la tabla
             self.swapSomePCB()
             free_bases = self.getFreeMemoryPagesBases()
             
@@ -376,7 +379,7 @@ class Paginacion(MMU):
         '''
         swap some pcb (should be like 'banquero') and return this free page
         '''
-        #Obtiene todos los PCBs
+        # Obtiene todos los PCBs
         all_process = self.getPageTable().keys()
          
         # (1) Si no está bloqueado, obtiene la unidad de tabla del proceso.
@@ -385,21 +388,90 @@ class Paginacion(MMU):
         # (4) toma las instruciones de memoria y las swapea
         # retorna la base
         for process in all_process:
-            if not self.getPageTable().isBlocked(process): # (1)
+            if not self.getPageTable().isBlocked(process):  # (1)
                 table_unit = self.getPageTable().getTable()[process]
-                no_swapped_pages_number = [ page_number for page_number in table_unit.getPages().keys() # (2) 
+                no_swapped_pages_number = [ page_number for page_number in table_unit.getPages().keys()  # (2) 
                                            if not table_unit.isSwapped(page_number) ]
-                page_number = no_swapped_pages_number[0] #Supone que al menos una estará libre
+                page_number = no_swapped_pages_number[0]  # Supone que al menos una estará libre
                 page = table_unit.getPages()[page_number]
-                base = page.getBase() # (3)
-                limit = page.getLimit() # (3)
-                table_unit.swap(page_number) # (3)
-                instrs = [ self.getMemory().read(base + ints_index) for ints_index in range(limit) ]# (4) 
-                self.getHDD().swapPageToPCB(process, page_number, instrs)# (4) 
-                return base# (5)
+                base = page.getBase()  # (3)
+                limit = page.getLimit()  # (3)
+                table_unit.swap(page_number)  # (3)
+                instrs = [ self.getMemory().read(base + ints_index) for ints_index in range(limit) ]  # (4) 
+                self.getHDD().swapPageToPCB(process, page_number, instrs)  # (4) 
+                return base  # (5)
             
-        raise Exception("Maybe this is a bug")        
+        raise Exception("Maybe this is a bug") 
     
+# Fits    
+    
+class Fit():
+    def __init__(self, mmu):
+        self.mmu = mmu
+    
+    def getFreePlaceBases(self):
+        '''
+        Return (base,lenght) tuples of all free place in memory
+        '''
+        mmu = self.mmu
+        return mmu.getFreePlaceBases()
+    
+    def availableFreePlaceBases(self, instrs):
+        '''
+        Return all tuples (base,lenght) where 'lenght' is more than instrs lenght
+        '''
+        free_place_bases = self.getFreePlaceBases()  # Should return (base,lenght) tuples
+        available_free_place_bases = [ free_place_base for free_place_base in free_place_bases 
+                                      if free_place_base[1] >= len(instrs) ]
+        return available_free_place_bases
+        
+    def getBaseFor(self, instrs):
+        '''
+        Get all availables (base,lenght) tuple for length of instrs, 
+         and return the base where the length if more than another 
+        
+        '''
+        tuples = self.getFreePlaceBases()
+        if tuples:
+            return self.correctBaseFromTuples(tuples)
+        else:
+            return None    
+    
+class WorstFit(Fit):
+    def __init__(self, mmu):
+        Fit.__init__(self, mmu)
+
+    def correctBaseFromTuples(self, tuples):
+        '''
+        Ordena de menor a mayor y retorna la base de la tupla 
+          con el 'lenght' mas grande
+        '''
+        sorted_tuples = sorted(tuples, key=lambda tuple: tuple[1])
+        return sorted_tuples.pop()[0]
+    
+class BestFir(Fit):
+    def __init__(self, mmu):
+        Fit.__init_(self, mmu)
+        
+    def correctBaseFromTuples(self, tuples):
+        '''
+        Ordena de menor a mayor y retorna la base de la tupla
+          con el menor 'lenght'
+        '''
+        sorted_tuples = sorted(tuples, key=lambda tuple: tuple[1])
+        return sorted_tuples.pop(0)[0]
+    
+class FirstFit(Fit):
+    def __init__(self, mmu):
+        Fit.__init__(self, mmu)
+        
+    def correctBaseFromTuples(self, tuples):
+        '''
+        Select the base form the first tuple
+        '''
+        return tuples.pop(0)[0]
+    
+        
 # Exceptions
 
 class AbstractMethodException(Exception):

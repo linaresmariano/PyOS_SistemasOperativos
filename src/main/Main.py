@@ -7,7 +7,7 @@ Created on 13/11/2012
 from software.Program import Program, Instruction
 from software.Kernel import Kernel
 #from software.MMU import PMMU
-from software.mmu import Paginacion
+from software.mmu import Paginacion, AsignacionContinua
 from software.Scheduler import RR
 from hardware.CPU import CPU
 from hardware.HDD import HDD
@@ -49,7 +49,7 @@ hdd = HDD()
 
 pageTable = PageTable()
 
-mmu = Paginacion(3, memory, hdd, pageTable)
+mmu = AsignacionContinua( memory, hdd, pageTable)
 cpu = CPU(mmu)
 io = IO(1)
 
@@ -73,6 +73,8 @@ kernel.executeProgram(p1)
 kernel.executeProgram(p2)
 kernel.executeProgram(p3)
 
+
+print "Hola!"
 
 
 

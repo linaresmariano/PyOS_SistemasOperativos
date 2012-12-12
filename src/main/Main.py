@@ -50,6 +50,7 @@ hdd = HDD()
 pageTable = PageTable()
 
 mmu = AsignacionContinua( memory, hdd, pageTable)
+#mmu = Paginacion(3, memory, hdd, pageTable)
 cpu = CPU(mmu)
 io = IO(1)
 
@@ -72,11 +73,3 @@ hdd.append(p3)
 kernel.executeProgram(p1)
 kernel.executeProgram(p2)
 kernel.executeProgram(p3)
-
-
-print "Hola!"
-
-
-
-
-

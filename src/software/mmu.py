@@ -303,7 +303,7 @@ class Fit():
          and return the base where the length if more than another 
         
         '''
-        tuples = self.getFreePlaceBases()
+        tuples = self.availableFreePlaceBases(instrs)
         if tuples != None:
             return self.correctBaseFromTuples(tuples)
         else:
@@ -326,8 +326,8 @@ class AsignacionContinua(MMU):
         base = self.getBaseFor(instrs)
         
         # Settea la unica pagina de la tabla. (PCB, numero_de_pagina,base,limit,Sswapped)
-        table.setPage(aPCB, 0, base[0], len(instrs), False)
-        self.writeOnMemory(instrs, base[0])
+        table.setPage(aPCB, 0, base, len(instrs), False)
+        self.writeOnMemory(instrs, base)
         
     def getBaseByEstrategy(self, instrs):
         return self.getFit().getBaseFor(instrs)
@@ -338,7 +338,7 @@ class AsignacionContinua(MMU):
         posible Base segun la estrategia de 'fit'.
         '''        
         base = self.getBaseByEstrategy(instrs)
-        if base != None:
+        if base:
             return base 
         
         # Si no hay un bloque que se pueda usar, miro cuanto es la suma de los espacios vacio.
@@ -405,7 +405,7 @@ class AsignacionContinua(MMU):
         '''
         tuples = self.getFreePlaceBases()
         # reduce(funcion_de_dos_parametro, lista_a_reducir) = inject
-        suma = reduce(lambda x, y: x[1] * y[1], tuples)
+        suma = reduce(lambda x, y: x[1] + y[1], tuples)
         return suma
     
     def firstFreePlace(self):
@@ -453,6 +453,8 @@ class WorstFit(Fit):
           con el 'lenght' mas grande
         '''
         sorted_tuples = sorted(tuples, key=lambda tuple: tuple[1])
+        if not sorted_tuples:
+            return []
         return sorted_tuples.pop(0)
     
 class BestFir(Fit):

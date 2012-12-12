@@ -28,7 +28,7 @@ class MMU:
         except SwappedPageException:
             self.unswap(aPCB, page)
             return self.fetchInstruction(aPCB, pc)
-        inst = self.getMemory().read(base[0] + desp)
+        inst = self.getMemory().read(base + desp)
         
         return inst        
     

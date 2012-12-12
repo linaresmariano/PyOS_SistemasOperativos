@@ -88,7 +88,7 @@ class MMU:
         for inst in page:
             index = free_page_number + count
             self.getMemory().write(index, inst)
-            self.getMemory().setInUse(index,True)
+            self.getMemory().setInUse(index, True)
             count += 1
         
         
@@ -152,7 +152,7 @@ class Paginacion(MMU):
         for to_swapped_pages in virtual_paged_instrs:
             self.getHDD().swapPageToPCB(aPCB, paged_instrs.index(to_swapped_pages), to_swapped_pages)
         
-    def getLenBlock(self,aPCB=None):
+    def getLenBlock(self, aPCB=None):
         '''
         Return the size of a page
         '''
@@ -278,8 +278,8 @@ class Paginacion(MMU):
 # Fits    
     
 class Fit():
-    def __init__(self, mmu):
-        self.mmu = mmu
+    def __init__(self):
+        self.mmu = None
     
     def getFreePlaceBases(self):
         '''
@@ -307,12 +307,17 @@ class Fit():
         if tuples != None:
             return self.correctBaseFromTuples(tuples)
         else:
-            return None    
+            return None  
+        
+    def setMMU(self,mmu):
+        self.mmu = mmu  
+        
 
 class AsignacionContinua(MMU):
-    def __init__(self, memory, hdd, page_table):
+    def __init__(self, memory, hdd, page_table, fit):
         MMU.__init__(self, memory, hdd, page_table)
-        self.fit = WorstFit(self)
+        self.fit = fit
+        self.fit.setMMU(self)
         
     def load(self, aPCB, instrs):
         # Si hay mas instrucciones que espacio total de la memoria, Se lanza una excepcion
@@ -373,11 +378,11 @@ class AsignacionContinua(MMU):
         contando = False
         memory = self.getMemory()
         
-        #Si estoy contando y el cluster sobre el q estoy (index) esta en uso, 
+        # Si estoy contando y el cluster sobre el q estoy (index) esta en uso, 
         #  dejo de contar y agrego la tupla al conjunto.
-        #Si estoy contando y el cluster sobre el q estoy no esta en uso,
+        # Si estoy contando y el cluster sobre el q estoy no esta en uso,
         #  sumo 1 al tamanho del bloque libre (segundo elemento de la tupla)
-        #Si no estoy contando y el cluster sobre el que estoy no esta en uso;
+        # Si no estoy contando y el cluster sobre el que estoy no esta en uso;
         #  seteo la base (index), pongo el lenght en 1 y comienzo a contat
         for index in range(memory.size()):
             if contando:
@@ -444,8 +449,8 @@ To Do List:
 '''
     
 class WorstFit(Fit):
-    def __init__(self, mmu):
-        Fit.__init__(self, mmu)
+    def __init__(self):
+        Fit.__init__(self)
 
     def correctBaseFromTuples(self, tuples):
         '''
@@ -455,11 +460,11 @@ class WorstFit(Fit):
         sorted_tuples = sorted(tuples, key=lambda tuple: tuple[1])
         if not sorted_tuples:
             return []
-        return sorted_tuples.pop(0)
+        return sorted_tuples.pop(0)[0]
     
 class BestFir(Fit):
-    def __init__(self, mmu):
-        Fit.__init_(self, mmu)
+    def __init__(self):
+        Fit.__init_(self)
         
     def correctBaseFromTuples(self, tuples):
         '''
@@ -470,8 +475,8 @@ class BestFir(Fit):
         return sorted_tuples.pop(0)[0]
     
 class FirstFit(Fit):
-    def __init__(self, mmu):
-        Fit.__init__(self, mmu)
+    def __init__(self):
+        Fit.__init__(self)
         
     def correctBaseFromTuples(self, tuples):
         '''

@@ -7,7 +7,7 @@ Created on 13/11/2012
 from software.Program import Program, Instruction
 from software.Kernel import Kernel
 #from software.MMU import PMMU
-from software.mmu import Paginacion, AsignacionContinua
+from software.mmu import Paginacion, AsignacionContinua, WorstFit
 from software.Scheduler import RR
 from hardware.CPU import CPU
 from hardware.HDD import HDD
@@ -44,12 +44,15 @@ print(p3.name + ": " + str(p3.length()) + " instructions.")
 #   Hardware Computer
 #========================
 #mmu = PMMU()
-memory = Memory(1024)
+memory = Memory(10)
 hdd = HDD()
 
 pageTable = PageTable()
+fit = WorstFit()
+#fit = BestFit()
+#fit = FirstFit()
 
-mmu = AsignacionContinua( memory, hdd, pageTable)
+mmu = AsignacionContinua( memory, hdd, pageTable, fit)
 #mmu = Paginacion(3, memory, hdd, pageTable)
 cpu = CPU(mmu)
 io = IO(1)

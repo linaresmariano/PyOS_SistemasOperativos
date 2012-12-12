@@ -34,7 +34,4 @@ class Memory():
     def size(self):
         return len(self.getClusters())
     
-    
-    
-m = Memory(100)
-    
+

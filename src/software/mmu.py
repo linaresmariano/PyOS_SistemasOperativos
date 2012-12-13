@@ -408,7 +408,24 @@ class AsignacionContinua(MMU):
         return tuples            
     
     def compact(self):
-        pass
+        memory = self.getMemory()
+        tengo_una_base_libre = False # Si ya encontre una base libre y estoy esperando encontrar un bloque para mover
+        begin_base = 0 # donde empieza esa base libre 
+        for index in range(memory.size()):
+            if tengo_una_base_libre:
+                #Si estoy contando y el cluster sobre el que estoy está en uso
+                if(memory.inUse(index)):
+                    pass 
+                    #Aca es qué pasa cuando venia contando los espacion vacios y me encuentro con una instrucion
+                    # deberia obtener el PCB en esa base, mover todas sus instruccion (base_del_PBC - begin_base)
+                    # hacia arriba. setear la pagina de ese PCB en la PageTable.
+                    # setear los clusters de memoria libres como en 'no uso'
+            else:
+                # Si no estoy contando y el cluster sobre el que estoy está libre
+                if(not memory.inUse(index)):
+                    contando = True
+                    begin_base = index
+                    
     
     def allFreePlace(self):
         '''

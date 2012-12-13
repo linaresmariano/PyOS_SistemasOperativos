@@ -413,15 +413,15 @@ class AsignacionContinua(MMU):
         begin_base = 0 # donde empieza esa base libre 
         for index in range(memory.size()):
             if tengo_una_base_libre:
-                #Si estoy contando y el cluster sobre el que estoy está en uso
+                #Si estoy contando y el cluster sobre el que estoy esta en uso
                 if(memory.inUse(index)):
                     pass 
-                    #Aca es qué pasa cuando venia contando los espacion vacios y me encuentro con una instrucion
+                    #Aca es que pasa cuando venia contando los espacion vacios y me encuentro con una instrucion
                     # deberia obtener el PCB en esa base, mover todas sus instruccion (base_del_PBC - begin_base)
                     # hacia arriba. setear la pagina de ese PCB en la PageTable.
                     # setear los clusters de memoria libres como en 'no uso'
             else:
-                # Si no estoy contando y el cluster sobre el que estoy está libre
+                # Si no estoy contando y el cluster sobre el que estoy esta libre
                 if(not memory.inUse(index)):
                     contando = True
                     begin_base = index

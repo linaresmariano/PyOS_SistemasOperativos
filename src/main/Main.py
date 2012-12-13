@@ -44,7 +44,7 @@ print(p3.name + ": " + str(p3.length()) + " instructions.")
 #   Hardware Computer
 #========================
 #mmu = PMMU()
-memory = Memory(10)
+memory = Memory(1024)
 hdd = HDD()
 
 pageTable = PageTable()

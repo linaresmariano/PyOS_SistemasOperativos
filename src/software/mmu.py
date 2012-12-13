@@ -90,6 +90,39 @@ class MMU:
             self.getMemory().write(index, inst)
             self.getMemory().setInUse(index, True)
             count += 1
+            
+    def swapSomePCB(self):
+        '''
+        swap some pcb (should be like 'banquero') and return this free page
+        '''
+        # Obtiene todos los PCBs
+        all_process = self.getPageTable().getTable().keys()
+         
+        # (1) Si no esta bloqueado, obtiene la unidad de tabla del proceso.
+        # (2) Luego recorre sus paginas hasta obtener una q no este swapeada
+        # (3) le saca la base, el limite y la setea como swapeada.
+        # (4) toma las instruciones de memoria y las swapea
+        # (5) retorna la base
+        for process in all_process:
+            if not self.getPageTable().isBlocked(process):  # (1)
+                table_unit = self.getPageTable().getTable()[process]
+                no_swapped_pages_number = [ page_number for page_number in table_unit.getPages().keys()  # (2) 
+                                           if not table_unit.isSwapped(page_number) ]
+                if len(no_swapped_pages_number) == 0:
+                    continue
+                page_number = no_swapped_pages_number[0]  # Supone que al menos una estara libre
+                page = table_unit.getPages()[page_number]
+                base = page.getBase()  # (3)
+                limit = page.getLimit()  # (3)
+                table_unit.swap(page_number)  # (3)
+                instrs = [ self.getMemory().read(base + ints_index) for ints_index in range(limit) ]  # (4) 
+                self.getHDD().swapPageToPCB(process, page_number, instrs)  # (4) 
+                for ints_index in range(limit):
+                    self.getMemory().setInUse(base + ints_index,False)  
+                return base  # (5)
+            
+        raise Exception("Maybe this is a bug") 
+    
         
         
     # Getters and Setters
@@ -247,33 +280,6 @@ class Paginacion(MMU):
             
         return free_bases[0] 
     
-    def swapSomePCB(self):
-        '''
-        swap some pcb (should be like 'banquero') and return this free page
-        '''
-        # Obtiene todos los PCBs
-        all_process = self.getPageTable().keys()
-         
-        # (1) Si no esta bloqueado, obtiene la unidad de tabla del proceso.
-        # (2) Luego recorre sus paginas hasta obtener una q no este swapeada
-        # (3) le saca la base, el limite y la setea como swapeada.
-        # (4) toma las instruciones de memoria y las swapea
-        # (5) retorna la base
-        for process in all_process:
-            if not self.getPageTable().isBlocked(process):  # (1)
-                table_unit = self.getPageTable().getTable()[process]
-                no_swapped_pages_number = [ page_number for page_number in table_unit.getPages().keys()  # (2) 
-                                           if not table_unit.isSwapped(page_number) ]
-                page_number = no_swapped_pages_number[0]  # Supone que al menos una estara libre
-                page = table_unit.getPages()[page_number]
-                base = page.getBase()  # (3)
-                limit = page.getLimit()  # (3)
-                table_unit.swap(page_number)  # (3)
-                instrs = [ self.getMemory().read(base + ints_index) for ints_index in range(limit) ]  # (4) 
-                self.getHDD().swapPageToPCB(process, page_number, instrs)  # (4) 
-                return base  # (5)
-            
-        raise Exception("Maybe this is a bug") 
     
 # Fits    
     
@@ -304,7 +310,7 @@ class Fit():
         
         '''
         tuples = self.availableFreePlaceBases(instrs)
-        if tuples != None:
+        if tuples:
             return self.correctBaseFromTuples(tuples)
         else:
             return None  
@@ -363,10 +369,10 @@ class AsignacionContinua(MMU):
             
         # Mientras no tenga espacio para poner el Proceso, swappeo otros procesos
         while(all_free_place < len(instrs)):
-            self.swapSomePCB()
-            all_free_place = self.AllFreePlace()
+            base = self.swapSomePCB()
+            all_free_place = self.allFreePlace()
                 
-        return self.allFreePlace()
+        return base
     
     def getFreePlaceBases(self):
         '''
@@ -410,7 +416,7 @@ class AsignacionContinua(MMU):
         '''
         tuples = self.getFreePlaceBases()
         # reduce(funcion_de_dos_parametro, lista_a_reducir) = inject
-        suma = reduce(lambda x, y: x[1] + y[1], tuples)
+        suma = reduce(lambda x, y: x[1] + y[1], tuples, [0,0])
         return suma
     
     def firstFreePlace(self):

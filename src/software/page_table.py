@@ -288,7 +288,7 @@ class PageTable:
         '''
         Protected method to get the block flag of a specific PCB
         '''
-        return self.table[aPCB].idBlocked()
+        return self.table[aPCB].isBlocked()
         
     def getLimit(self, aPCB, page_number):
         '''
